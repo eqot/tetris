@@ -2,7 +2,7 @@
 #blockArea {
 	width: 40%;
 	height: 90%;
-	position: absolute;
+	position: relative;
 	top: 2%;
 	left: 30%;
 	background-color: black;
@@ -10,4 +10,17 @@
 	border-width: 10px;
 	border-style: solid;
 	border-color: white;
+}
+
+.block {
+	position: relative;
+}
+
+.square {
+	width: 10%;
+	height: 50px;
+	background-color: blue;
+
+	position: relative;
+	border: 5px solid yellow;
 }
