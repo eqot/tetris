@@ -13,6 +13,7 @@
 		$('#right').click(onButtonPress);
 		$('#down').click(onButtonPress);
 		$('#rotate').click(onButtonPress);
+		$('#add').click(onButtonPress);
 	}
 
 	function onButtonPress (event) {
@@ -32,6 +33,10 @@
 
 			case 'rotate':
 				moveBlock(BlockEvent.ROTATE);
+				break;
+
+			case 'add':
+				createBlock();
 				break;
 
 			default:
