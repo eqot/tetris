@@ -1,4 +1,6 @@
 
+var ANIMATION_DURATION = '0.3s'
+
 var currentBlock;
 var squareSize;
 
@@ -58,10 +60,6 @@ function Block(blockType) {
 	this.createSquare(blockType);
 }
 
-Block.prototype.draw = function() {
-	console.log('block draw');
-}
-
 Block.prototype.createSquare = function(blockType) {
 	console.log('block createSquare');
 	var property = BLOCK_PROPERTY_ARRAY[blockType];
@@ -103,6 +101,7 @@ Block.prototype.rotate = function() {
 
 Block.prototype.update = function() {
 	console.log('block update: x = ' + this.x + ', y = ' + this.y + ', rotate = ' + this.rotation);
+	this.$block.css('-webkit-transition', ANIMATION_DURATION);
 	this.$block.css('-webkit-transform', 'rotate(' + this.rotation + 'deg) translate(' + this.x + 'px, ' + this.y + 'px)');
 	this.$block.css('-webkit-transform-origin', this.rotationCenterX + 'px ' + this.rotationCenterY + 'px');
 }
