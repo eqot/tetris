@@ -6,7 +6,8 @@ BlockEvent = {
 	LEFT: 0,
 	RIGHT: 1,
 	DOWN: 2,
-	ROTATE: 3
+	ROTATE: 3,
+	ADD: 4
 };
 
 function dummy() {

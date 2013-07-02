@@ -1,6 +1,23 @@
 
 (function() {
 
+	var BUTTON_MAP = {
+		'left': BlockEvent.LEFT,
+		'right': BlockEvent.RIGHT,
+		'down': BlockEvent.DOWN,
+		'rotate': BlockEvent.ROTATE,
+		'add': BlockEvent.ADD
+	};
+
+	var KEY_MAP = {
+		37: BlockEvent.LEFT,
+		39: BlockEvent.RIGHT,
+		40: BlockEvent.DOWN,
+		38: BlockEvent.ROTATE,
+		32: BlockEvent.ROTATE,
+		13: BlockEvent.ADD
+	};
+
 	$(document).ready(function($) {
 		initialize();
 		mainLoop();
@@ -14,33 +31,29 @@
 		$('#down').click(onButtonPress);
 		$('#rotate').click(onButtonPress);
 		$('#add').click(onButtonPress);
+
+		$(document).keydown(onKeyPress);
 	}
 
 	function onButtonPress (event) {
-		var blockEvent = event.target.id;
-		switch (blockEvent) {
-			case 'left':
-				moveBlock(BlockEvent.LEFT);
-				break;
+		var code = event.target.id;
+		var blockEvent = BUTTON_MAP[code];
+		executeBlockEvent(blockEvent);
+	}
 
-			case 'right':
-				moveBlock(BlockEvent.RIGHT);
-				break;
+	function onKeyPress (event)  {
+		var code = event.keyCode;
+		var blockEvent = KEY_MAP[code];
+		executeBlockEvent(blockEvent);
+	}
 
-			case 'down':
-				moveBlock(BlockEvent.DOWN);
-				break;
-
-			case 'rotate':
-				moveBlock(BlockEvent.ROTATE);
-				break;
-
-			case 'add':
+	function executeBlockEvent (blockEvent) {
+		if (blockEvent !== undefined) {
+			if (blockEvent === BlockEvent.ADD) {
 				createBlock();
-				break;
-
-			default:
-				break;
+			} else {
+				moveBlock(blockEvent);
+			}
 		}
 	}
 
