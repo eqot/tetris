@@ -24,13 +24,7 @@
 	});
 
 	function initialize() {
-		console.log('initialize()');
-
-		$('#left').click(onButtonPress);
-		$('#right').click(onButtonPress);
-		$('#down').click(onButtonPress);
-		$('#rotate').click(onButtonPress);
-		$('#add').click(onButtonPress);
+		$('.blockEvent').click(onButtonPress);
 
 		$(document).keydown(onKeyPress);
 	}
