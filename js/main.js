@@ -32,6 +32,35 @@
 
 		// Set an event listener for keys to be pressed
 		$(document).keydown(onKeyPress);
+
+		// Set an event listener for window size to be changed
+		$(window).resize(adjustBlockAreaSize);
+		adjustBlockAreaSize();
+	}
+
+	// Adjust block area size to window size
+	function adjustBlockAreaSize () {
+		var width = $(window).width() - 40;
+		var height = $(window).height() - 40;
+
+		var blockArea = $('#blockArea');
+		if (width >= height) {
+			// Landscape
+			blockArea.width(height / 2);
+			blockArea.height(height);
+			blockArea.css('left', (width - (height / 2)) / 2);
+		} else {
+			// Portrait
+			if (width * 2 < height) {
+				blockArea.width(width);
+				blockArea.height(width * 2);
+				blockArea.css('left', 10);
+			} else {
+				blockArea.width(height / 2);
+				blockArea.height(height);
+				blockArea.css('left', (width - (height / 2)) / 2);
+			}
+		}
 	}
 
 	// Handle button press event
