@@ -1,5 +1,6 @@
 
-var ANIMATION_DURATION = '0.3s'
+var ROTATION_DEGREE = 90;
+var ANIMATION_DURATION = '0.3s';
 
 var currentBlock;
 var squareSize;
@@ -51,57 +52,64 @@ function moveBlock(blockEvent) {
 
 function Block(blockType) {
 	console.log('block create');
-	this.$block = $('<div/>').addClass('block');
-	$('#blockArea').append(this.$block);
 	this.x = 0;
 	this.y = 0;
-	this.rotation = 0;
+	this.rotationState = 0;
 
-	this.createSquare(blockType);
+	var property = BLOCK_PROPERTY_ARRAY[blockType];
+	this.createDom(property);
+	this.rotationCenterOffset = property.range / 2.0;
+	this.stateNum = property.stateNum;
+	this.updateTransformOrigin();
 }
 
-Block.prototype.createSquare = function(blockType) {
+Block.prototype.createDom = function(property) {
 	console.log('block createSquare');
-	var property = BLOCK_PROPERTY_ARRAY[blockType];
-	for (var i = 0; i < 4; i++) {
+	this.$block = $('<div/>').addClass('block');
+	this.$block.css('-webkit-transition', ANIMATION_DURATION);
+	$('#blockArea').append(this.$block);
+	for (var i = 0; i < property.placement.length; i++) {
 		var $square = $('<div/>').addClass('square');
 		$square.css('width', squareSize);
 		$square.css('height', squareSize);
+		$square.css('left', property.placement[i][0] * squareSize);
+		$square.css('top', property.placement[i][1] * squareSize);
 		$square.css('background-color', property.color);
-		$square.css('left', squareSize * property.squarePlacement[i][0]);
-		$square.css('top', squareSize * property.squarePlacement[i][1]);
 		this.$block.append($square);
 	}
-	this.rotationCenterX = squareSize * property.rotationCenter[0];
-	this.rotationCenterY = squareSize * property.rotationCenter[1];
 }
 
 Block.prototype.moveLeft = function() {
-	this.x -= squareSize;
-	this.rotationCenterX -= squareSize;
+	this.x--;
 	this.update();
 }
 
 Block.prototype.moveRight = function() {
-	this.x += squareSize;
-	this.rotationCenterX += squareSize;
+	this.x++;
 	this.update();
 }
 
 Block.prototype.moveDown = function() {
-	this.y += squareSize;
-	this.rotationCenterY += squareSize;
+	this.y++;
 	this.update();
 }
 
 Block.prototype.rotate = function() {
-	this.rotation += 90;
+	//this.rotationState = (this.rotationState + 1) % this.stateNum;
+	this.rotationState++;
 	this.update();
 }
 
 Block.prototype.update = function() {
-	console.log('block update: x = ' + this.x + ', y = ' + this.y + ', rotate = ' + this.rotation);
-	this.$block.css('-webkit-transition', ANIMATION_DURATION);
-	this.$block.css('-webkit-transform', 'rotate(' + this.rotation + 'deg) translate(' + this.x + 'px, ' + this.y + 'px)');
-	this.$block.css('-webkit-transform-origin', this.rotationCenterX + 'px ' + this.rotationCenterY + 'px');
+	console.log('block update: x = ' + this.x + ', y = ' + this.y + ', rotate = ' + this.rotationState);
+	this.updateTransformOrigin();
+	this.updateTransform();
+}
+
+Block.prototype.updateTransform = function() {
+	this.$block.css('-webkit-transform', 'rotate(' + this.rotationState * ROTATION_DEGREE + 'deg) translate(' + this.x * squareSize + 'px, ' + this.y * squareSize + 'px)');
+}
+
+Block.prototype.updateTransformOrigin = function() {
+	this.$block.css('-webkit-transform-origin', (this.x + this.rotationCenterOffset) * squareSize + 'px ' + (this.y + this.rotationCenterOffset) * squareSize + 'px');
 }
