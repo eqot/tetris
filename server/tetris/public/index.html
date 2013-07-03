@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tetris</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/tetris.css">
+
+    <script src="js/vendor/jquery-1.10.1.min.js"></script>
+    <script src="js/block_property.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/main.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/tetrisc.js"></script>
+</head>
+
+<body>
+	<div id="blockArea">
+	</div>
+
+	<div id="controller">
+		<button class="blockEvent" id="left">←</button>
+		<button class="blockEvent" id="rotate">◯</button>
+		<button class="blockEvent" id="right">→</button>
+		<button class="blockEvent" id="down">↓</button>
+		<button class="blockEvent" id="add">add</button>
+	</div>
+</body>
+
+</html>
