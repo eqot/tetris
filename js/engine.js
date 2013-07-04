@@ -1,9 +1,12 @@
 
-var ROTATION_DEGREE = 90;
-var ANIMATION_DURATION = '0.3s';
+var ROW_NUM = 15;
+var COLUMN_NUM = 10;
+var WALL_RANGE = 4; // max block range
 
 var currentBlock;
-var squareSize;
+var existingBlockFlag;
+var tileSize;
+var topMargin;
 
 BlockEvent = {
 	LEFT: 0,
@@ -13,103 +16,45 @@ BlockEvent = {
 	ADD: 4
 };
 
-function dummy() {
-	squareSize = $('#blockArea').width() / 10;
-	console.log('squareSize = ' + squareSize);
+function gameStart() {
+	tileSize = $('#blockArea').width() / COLUMN_NUM;
+	topMargin = $('#blockArea').height() - tileSize * ROW_NUM;
+	console.log('tileSize = ' + tileSize + ', topMargin = ' + topMargin);
+
+	// initialize existing block flag
+	existingBlockFlag = new Array(ROW_NUM + 1);
+	for (var i = 0; i < ROW_NUM; i++) {
+		leftWallFlag = (0x01 << WALL_RANGE) - 1;
+		rightWallFlag = leftWallFlag << WALL_RANGE + COLUMN_NUM;
+		existingBlockFlag[i] = leftWallFlag | rightWallFlag; // 111100...001111
+	}
+	existingBlockFlag[ROW_NUM] = (0x01 << WALL_RANGE + COLUMN_NUM + 1) - 1; // last line
 }
 
-function createBlock() {
-	var blockType = Math.floor( Math.random() * 7);
-	currentBlock = new Block(blockType);
+function createBlock(blockType) {
+	currentBlock = new Block(blockType, tileSize, COLUMN_NUM, topMargin);
 }
 
 function moveBlock(blockEvent) {
-	switch (blockEvent) {
-		case BlockEvent.LEFT:
-			console.log('left');
-			currentBlock.moveLeft();
-			break;
-
-		case BlockEvent.RIGHT:
-			console.log('right');
-			currentBlock.moveRight();
-			break;
-
-		case BlockEvent.DOWN:
-			console.log('down');
-			currentBlock.moveDown();
-			break;
-
-		case BlockEvent.ROTATE:
-			console.log('rotate');
-			currentBlock.rotate();
-			break;
-
-		default:
-			break;
+	if (collisionCheck(blockEvent)) {
+		currentBlock.move(blockEvent);
 	}
 }
 
-function Block(blockType) {
-	console.log('block create');
-	this.x = 0;
-	this.y = 0;
-	this.rotationState = 0;
+function collisionCheck(blockEvent) {
+	var transform = currentBlock.transform.copy();
+	transform.move(blockEvent);
 
-	var property = BLOCK_PROPERTY_ARRAY[blockType];
-	this.createDom(property);
-	this.rotationCenterOffset = property.range / 2.0;
-	this.stateNum = property.stateNum;
-	this.updateTransformOrigin();
-}
-
-Block.prototype.createDom = function(property) {
-	console.log('block createSquare');
-	this.$block = $('<div/>').addClass('block');
-	this.$block.css('-webkit-transition', ANIMATION_DURATION);
-	$('#blockArea').append(this.$block);
-	for (var i = 0; i < property.placement.length; i++) {
-		var $square = $('<div/>').addClass('square');
-		$square.css('width', squareSize);
-		$square.css('height', squareSize);
-		$square.css('left', property.placement[i][0] * squareSize);
-		$square.css('top', property.placement[i][1] * squareSize);
-		$square.css('background-color', property.color);
-		this.$block.append($square);
+	var param = currentBlock.param;
+	var currentBlockFlag = param.collisionFlagArray[transform.rotation % param.stateNum];
+	dumpCollisionFlag(currentBlockFlag, param.range);
+	var x = transform.x + WALL_RANGE;
+	var y = transform.y;
+	for (var i = 0; i < param.range; i++) {
+		checkResult = (currentBlockFlag[i] << x) & existingBlockFlag[y + i];
+		if (checkResult != 0) {
+			return false;
+		}
 	}
-}
-
-Block.prototype.moveLeft = function() {
-	this.x--;
-	this.update();
-}
-
-Block.prototype.moveRight = function() {
-	this.x++;
-	this.update();
-}
-
-Block.prototype.moveDown = function() {
-	this.y++;
-	this.update();
-}
-
-Block.prototype.rotate = function() {
-	//this.rotationState = (this.rotationState + 1) % this.stateNum;
-	this.rotationState++;
-	this.update();
-}
-
-Block.prototype.update = function() {
-	console.log('block update: x = ' + this.x + ', y = ' + this.y + ', rotate = ' + this.rotationState);
-	this.updateTransformOrigin();
-	this.updateTransform();
-}
-
-Block.prototype.updateTransform = function() {
-	this.$block.css('-webkit-transform', 'rotate(' + this.rotationState * ROTATION_DEGREE + 'deg) translate(' + this.x * squareSize + 'px, ' + this.y * squareSize + 'px)');
-}
-
-Block.prototype.updateTransformOrigin = function() {
-	this.$block.css('-webkit-transform-origin', (this.x + this.rotationCenterOffset) * squareSize + 'px ' + (this.y + this.rotationCenterOffset) * squareSize + 'px');
+	return true;
 }
