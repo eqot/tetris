@@ -16,7 +16,7 @@
 	position: absolute;
 }
 
-.square {
+.tile {
 	position: absolute;
 	border: 5px solid gray;
 	box-sizing: border-box;

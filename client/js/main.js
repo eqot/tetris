@@ -81,7 +81,8 @@
 	function executeBlockEvent (blockEvent) {
 		if (blockEvent !== undefined) {
 			if (blockEvent === BlockEvent.ADD) {
-				createBlock();
+				var blockType = Math.floor( Math.random() * 7);
+				createBlock(blockType);
 			} else {
 				moveBlock(blockEvent);
 			}
@@ -89,7 +90,7 @@
 	}
 
 	function mainLoop() {
-		dummy();
+		gameStart();
 	}
 
 })();
