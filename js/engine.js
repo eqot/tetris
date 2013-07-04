@@ -13,7 +13,8 @@ BlockEvent = {
 	RIGHT: 1,
 	DOWN: 2,
 	ROTATE: 3,
-	ADD: 4
+	ADD: 4,
+	PAUSE: 5
 };
 
 function Engine() {

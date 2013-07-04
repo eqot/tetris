@@ -53,7 +53,6 @@ Block.prototype.updateTransform = function() {
 	this.$block.css('-webkit-transform', 'rotate(' + this.transformParam.rotation * ROTATION_DEGREE
 					+ 'deg) translate(' + this.transformParam.x * this.tileSize + 'px, '
 					+ (this.transformParam.y * this.tileSize + this.topMargin) + 'px)');
-	
 }
 
 Block.prototype.updateTransformOrigin = function() {
@@ -74,6 +73,7 @@ Tile.prototype.createDom = function(tileSize, x, y, color) {
 	$tile.css('left', x * tileSize);
 	$tile.css('top', y * tileSize);
 	$tile.css('background-color', color);
+	$tile.css('-webkit-transition', ANIMATION_DURATION);
 	this.$tile = $tile;
 }
 

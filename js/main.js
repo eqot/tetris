@@ -16,7 +16,7 @@
 		39: BlockEvent.RIGHT,	// Right key
 		40: BlockEvent.DOWN,	// Down key
 		38: BlockEvent.ROTATE,	// Up key
-		32: BlockEvent.ROTATE,	// Space key
+		32: BlockEvent.PAUSE,	// Space key
 		13: BlockEvent.ADD		// Enter key
 	};
 
@@ -78,6 +78,7 @@
 	}
 
 	var engine;
+	var pauseFlag = false;
 
 	// Execute block event like adding and moving block
 	function executeBlockEvent (blockEvent) {
@@ -85,14 +86,34 @@
 			if (blockEvent === BlockEvent.ADD) {
 				var blockType = Math.floor( Math.random() * 7);
 				engine.createBlock(blockType);
+			} else if (blockEvent === BlockEvent.PAUSE) {
+				pauseFlag = !pauseFlag;
+				if (!pauseFlag) {
+					update();
+				}
 			} else {
 				engine.moveBlock(blockEvent);
 			}
 		}
 	}
 
-	function mainLoop() {
-		engine = new Engine();
+	function update() {
+		if (pauseFlag) {
+			return;
+		}
+
+		if (engine.currentBlock == null) {
+			executeBlockEvent(BlockEvent.ADD);
+		} else {
+			executeBlockEvent(BlockEvent.DOWN);
+		}
+		setTimeout(function() {
+			update();
+		}, 1000);
 	}
 
+	function mainLoop() {
+		engine = new Engine();
+		update();
+	}
 })();
