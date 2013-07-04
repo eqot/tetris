@@ -2,65 +2,109 @@
 var ROTATION_DEGREE = 90;
 var ANIMATION_DURATION = '0.3s';
 
-function Block(blockType, tileSize, columnNum, topMargin) {
+// | cos(theta) -sin(theta) |
+// | sin(theta) cos(theta)  |
+// theta = 0, 90, 180, 270 (deg)
+var ROTATION_MATRIX_LIST = [[[1, 0], [0, 1]], [[0, -1], [1, 0]], [[-1, 0], [0, -1]], [[0, 1], [-1, 0]]];
+
+function Block(blockType, tileSize, topMargin, columnNum) {
 	console.log('block create');
 
-	var param = BLOCK_PARAM_ARRAY[blockType];
-	this.param = param;
+	var blockParam = BLOCK_PARAM_LIST[blockType];
+	this.blockParam = blockParam;
 	this.tileSize = tileSize;
 	this.topMargin = topMargin;
 
-	this.transform = new Transform(columnNum - param.range >> 1, 0, 0);
-	this.createDom(param);
-	this.rotationCenterOffset = param.range / 2.0;
+	this.transformParam = new TransformParam(columnNum - blockParam.range >> 1, 0, 0);
+	this.createDom(blockParam);
+	this.rotationCenterOffset = blockParam.range / 2.0;
 
 	this.updateTransform();
 	this.updateTransformOrigin();
 }
 
-Block.prototype.createDom = function(param) {
-	this.$block = $('<div/>').addClass('block');
-	this.$block.css('-webkit-transition', ANIMATION_DURATION);
-	$('#blockArea').append(this.$block);
-	for (var i = 0; i < param.placement.length; i++) {
-		var $tile = $('<div/>').addClass('tile');
-		$tile.css('width', this.tileSize);
-		$tile.css('height', this.tileSize);
-		$tile.css('left', param.placement[i][0] * this.tileSize);
-		$tile.css('top', param.placement[i][1] * this.tileSize);
-		$tile.css('background-color', param.color);
-		this.$block.append($tile);
+Block.prototype.createDom = function(blockParam) {
+	var $block = $('<div/>').addClass('block');
+	$block.css('-webkit-transition', ANIMATION_DURATION);
+
+	var tileNum = blockParam.placement.length;
+	this.tileList = new Array(tileNum);
+	for (var i = 0; i < tileNum; i++) {
+		var tile = new Tile();
+		tile.createDom(this.tileSize, blockParam.placement[i][0], blockParam.placement[i][1], blockParam.color);
+		$block.append(tile.$tile);
+		this.tileList[i] = tile;
 	}
+
+	$('#blockArea').append($block);
+	this.$block = $block;
 }
 
 Block.prototype.move = function(blockEvent) {
-	var transform = this.transform;
-	transform.move(blockEvent);
-	console.log('block update: x = ' + transform.x + ', y = ' + transform.y
-				+ ', rotate = ' + transform.rotation);
+	var transformParam = this.transformParam;
+	transformParam.move(blockEvent);
+	console.log('block update: x = ' + transformParam.x + ', y = ' + transformParam.y
+				+ ', rotate = ' + transformParam.rotation);
 	this.updateTransformOrigin();
 	this.updateTransform();
 }
 
 Block.prototype.updateTransform = function() {
-	this.$block.css('-webkit-transform', 'rotate(' + this.transform.rotation * ROTATION_DEGREE
-					+ 'deg) translate(' + this.transform.x * this.tileSize + 'px, '
-					+ (this.transform.y * this.tileSize + this.topMargin) + 'px)');
-					
+	this.$block.css('-webkit-transform', 'rotate(' + this.transformParam.rotation * ROTATION_DEGREE
+					+ 'deg) translate(' + this.transformParam.x * this.tileSize + 'px, '
+					+ (this.transformParam.y * this.tileSize + this.topMargin) + 'px)');
+	
 }
 
 Block.prototype.updateTransformOrigin = function() {
-	this.$block.css('-webkit-transform-origin', (this.transform.x + this.rotationCenterOffset) * this.tileSize
-					+ 'px ' + ((this.transform.y + this.rotationCenterOffset) * this.tileSize + this.topMargin) + 'px');
+	this.$block.css('-webkit-transform-origin', (this.transformParam.x + this.rotationCenterOffset) * this.tileSize
+					+ 'px ' + ((this.transformParam.y + this.rotationCenterOffset) * this.tileSize + this.topMargin) + 'px');
 }
 
-function Transform(x, y, rotation) {
+function Tile() {
+	// used for shift block
+	this.x = 0;
+	this.y = 0;
+}
+
+Tile.prototype.createDom = function(tileSize, x, y, color) {
+	var $tile = $('<div/>').addClass('tile');
+	$tile.css('width', tileSize);
+	$tile.css('height', tileSize);
+	$tile.css('left', x * tileSize);
+	$tile.css('top', y * tileSize);
+	$tile.css('background-color', color);
+	this.$tile = $tile;
+}
+
+Tile.prototype.removeDom = function() {
+	this.$tile.remove();
+}
+
+Tile.prototype.setShiftDownOffset = function(rotationState) {
+	var rotationMatrixNum = ROTATION_MATRIX_LIST.length;
+	// inverse because coodinate rotation
+	var inverseRotationState = (rotationMatrixNum - rotationState) % rotationMatrixNum;
+	var coodinateRotationMatrix = ROTATION_MATRIX_LIST[inverseRotationState];
+	// (0 1) * rotationMatrix
+	this.shiftDownX = coodinateRotationMatrix[0][1];
+	this.shiftDownY = coodinateRotationMatrix[1][1];
+}
+
+Tile.prototype.shiftDown = function(tileSize) {
+	this.x += this.shiftDownX;
+	this.y += this.shiftDownY;
+	this.$tile.css('-webkit-transform', 'translate(' + this.x * tileSize + 'px, '
+				   + this.y * tileSize + 'px)');
+}
+
+function TransformParam(x, y, rotation) {
 	this.x = x;
 	this.y = y;
 	this.rotation = rotation;
 }
 
-Transform.prototype.move = function(blockEvent) {
+TransformParam.prototype.move = function(blockEvent) {
 	switch (blockEvent) {
 	case BlockEvent.LEFT:
 		this.x--;
@@ -72,7 +116,6 @@ Transform.prototype.move = function(blockEvent) {
 		this.y++;
 		break;
 	case BlockEvent.ROTATE:
-		//this.rotation = (this.rotation + 1) % this.stateNum;
 		this.rotation++;
 		break;
 	default:
@@ -80,53 +123,50 @@ Transform.prototype.move = function(blockEvent) {
 	}
 }
 
-Transform.prototype.copy = function(blockEvent) {
-	return new Transform(this.x, this.y, this.rotation);
+TransformParam.prototype.copy = function(blockEvent) {
+	return new TransformParam(this.x, this.y, this.rotation);
 }
 
 function BlockParam(placement, color, range) {
 	this.placement = placement;
 	this.color = color;
 	this.range = range;
-	this.stateNum = ROTATION_MATRIX_ARRAY.length;
+	this.stateNum = ROTATION_MATRIX_LIST.length;
 
 	console.log('block color = ' + color + ', range = ' + range);
 	this.generateCollisionFlag();
 }
-
-// | cos(theta) -sin(theta) |
-// | sin(theta) cos(theta)  |
-// theta = 0, 90, 180, 270 (deg)
-var ROTATION_MATRIX_ARRAY = [[[1, 0], [0, 1]], [[0, -1], [1, 0]], [[-1, 0], [0, -1]], [[0, 1], [-1, 0]]];
 
 BlockParam.prototype.generateCollisionFlag = function() {
 	var range = this.range;
 	var placement = this.placement;
 	var tileNum = placement.length;
 	var rotationStateNum = this.stateNum;
-	var transformedVectorArray = new Array(tileNum);
+	var transformedVectorList = new Array(tileNum);
 
 	for (var i = 0; i < tileNum; i++) {
 		// transform coordinate to make rotation center as origin
 		// (double to calculate as integer)
 		var x = placement[i][0] * 2 + 1 - range;
 		var y = placement[i][1] * 2 + 1 - range;
-		transformedVectorArray[i] = [x, y];
+		transformedVectorList[i] = [x, y];
 		//console.log('transformed pos: x = ' + x + ', y = ' + y);
 	}
 
-	var collisionFlagArray = new Array(rotationStateNum);
+	var collisionFlagList = new Array(rotationStateNum);
+	var tilePosSet = new Array(rotationStateNum);
 	for (var i = 0; i < rotationStateNum; i++) {
 		// initialize collisionFlag
 		var collisionFlag = new Array(range);
 		for (var j = 0; j < range; j++) {
 			collisionFlag[j] = 0;
 		}
+		var tilePosList = new Array(tileNum);
 
 		// multiply rotation matrix
-		var matrix = ROTATION_MATRIX_ARRAY[i];
+		var matrix = ROTATION_MATRIX_LIST[i];
 		for (var j = 0; j < tileNum; j++) {
-			var transformedVector = transformedVectorArray[j];
+			var transformedVector = transformedVectorList[j];
 			var rotatedX = transformedVector[0] * matrix[0][0] + transformedVector[1] * matrix[0][1];
 			var rotatedY = transformedVector[0] * matrix[1][0] + transformedVector[1] * matrix[1][1];
 			// revert coordinate
@@ -134,14 +174,17 @@ BlockParam.prototype.generateCollisionFlag = function() {
 			var y = (rotatedY + range - 1) / 2;
 			//console.log('rotate pos: x = ' + x + ', y = ' + y);
 			collisionFlag[y] |= 0x01 << x;
+			tilePosList[j] = [x, y];
 		}
-		collisionFlagArray[i] = collisionFlag;
+		collisionFlagList[i] = collisionFlag;
+		tilePosSet[i] = tilePosList;
 	}
-	this.collisionFlagArray = collisionFlagArray;
+	this.collisionFlagList = collisionFlagList;
+	this.tilePosSet = tilePosSet;
 
-	// for (var i = 0; i < ROTATION_MATRIX_ARRAY.length; i++) {
+	// for (var i = 0; i < ROTATION_MATRIX_LIST.length; i++) {
 	// 	console.log('rotate: ' + (i * 90));
-	// 	dumpCollisionFlag(collisionFlagArray[i], range);
+	// 	dumpCollisionFlag(collisionFlagList[i], range);
 	// }
 }
 
@@ -168,5 +211,4 @@ var BLOCK_PARAM_L = new BlockParam([[2, 0], [0, 1], [1, 1], [2, 1]], 'orange', 3
 var BLOCK_PARAM_S = new BlockParam([[1, 0], [2, 0], [0, 1], [1, 1]], 'green', 3);
 var BLOCK_PARAM_Z = new BlockParam([[0, 0], [1, 0], [1, 1], [2, 1]], 'red', 3);
 
-var BLOCK_PARAM_ARRAY = [BLOCK_PARAM_I, BLOCK_PARAM_O, BLOCK_PARAM_T, BLOCK_PARAM_J, BLOCK_PARAM_L, BLOCK_PARAM_S, BLOCK_PARAM_Z];
-
+var BLOCK_PARAM_LIST = [BLOCK_PARAM_I, BLOCK_PARAM_O, BLOCK_PARAM_T, BLOCK_PARAM_J, BLOCK_PARAM_L, BLOCK_PARAM_S, BLOCK_PARAM_Z];

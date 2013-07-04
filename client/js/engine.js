@@ -1,12 +1,12 @@
 
 var ROW_NUM = 15;
 var COLUMN_NUM = 10;
-var WALL_RANGE = 4; // max block range
 
-var currentBlock;
-var existingBlockFlag;
-var tileSize;
-var topMargin;
+var WALL_RANGE = 4; // max block range
+var LEFT_WALL_FLAG = (0x01 << WALL_RANGE) - 1;
+var RIGHT_WALL_FLAG = LEFT_WALL_FLAG << WALL_RANGE + COLUMN_NUM;
+var WALL_FLAG = LEFT_WALL_FLAG | RIGHT_WALL_FLAG; // 111100...001111
+var FULL_LINE_FLAG = (0x01 << WALL_RANGE * 2 + COLUMN_NUM) - 1;
 
 BlockEvent = {
 	LEFT: 0,
@@ -16,45 +16,121 @@ BlockEvent = {
 	ADD: 4
 };
 
-function gameStart() {
-	tileSize = $('#blockArea').width() / COLUMN_NUM;
-	topMargin = $('#blockArea').height() - tileSize * ROW_NUM;
-	console.log('tileSize = ' + tileSize + ', topMargin = ' + topMargin);
+function Engine() {
+	this.tileSize = $('#blockArea').width() / COLUMN_NUM;
+	this.topMargin = $('#blockArea').height() - this.tileSize * ROW_NUM;
+	console.log('tileSize = ' + this.tileSize + ', topMargin = ' + this.topMargin);
 
 	// initialize existing block flag
-	existingBlockFlag = new Array(ROW_NUM + 1);
+	this.existingBlockFlag = new Array(ROW_NUM + 1);
+	this.existingTileList = new Array(ROW_NUM);
 	for (var i = 0; i < ROW_NUM; i++) {
-		leftWallFlag = (0x01 << WALL_RANGE) - 1;
-		rightWallFlag = leftWallFlag << WALL_RANGE + COLUMN_NUM;
-		existingBlockFlag[i] = leftWallFlag | rightWallFlag; // 111100...001111
+		this.existingBlockFlag[i] = WALL_FLAG;
+		this.existingTileList[i] = new Array();
 	}
-	existingBlockFlag[ROW_NUM] = (0x01 << WALL_RANGE + COLUMN_NUM + 1) - 1; // last line
+	this.existingBlockFlag[ROW_NUM] = FULL_LINE_FLAG; // last line
 }
 
-function createBlock(blockType) {
-	currentBlock = new Block(blockType, tileSize, COLUMN_NUM, topMargin);
+Engine.prototype.createBlock = function(blockType) {
+	this.currentBlock = new Block(blockType, this.tileSize, this.topMargin, COLUMN_NUM);
 }
 
-function moveBlock(blockEvent) {
-	if (collisionCheck(blockEvent)) {
-		currentBlock.move(blockEvent);
+Engine.prototype.moveBlock = function(blockEvent) {
+	if (this.currentBlock == null) {
+		return;
+	}
+
+	if (this.collisionCheck(blockEvent)) {
+		this.currentBlock.move(blockEvent);
+	} else if (blockEvent == BlockEvent.DOWN) {
+		var fullLineIndexList = this.fixBlock();
+		var fullLineNum = fullLineIndexList.length;
+		for (var i = 0; i < fullLineNum; i++) {
+			this.deleteLine(fullLineIndexList[i]);
+		}
+		this.shiftBlock(fullLineIndexList);
 	}
 }
 
-function collisionCheck(blockEvent) {
-	var transform = currentBlock.transform.copy();
-	transform.move(blockEvent);
+Engine.prototype.collisionCheck = function(blockEvent) {
+	var transformParam = this.currentBlock.transformParam.copy();
+	transformParam.move(blockEvent);
+	var x = transformParam.x + WALL_RANGE;
+	var y = transformParam.y;
 
-	var param = currentBlock.param;
-	var currentBlockFlag = param.collisionFlagArray[transform.rotation % param.stateNum];
-	dumpCollisionFlag(currentBlockFlag, param.range);
-	var x = transform.x + WALL_RANGE;
-	var y = transform.y;
-	for (var i = 0; i < param.range; i++) {
-		checkResult = (currentBlockFlag[i] << x) & existingBlockFlag[y + i];
+	var blockParam = this.currentBlock.blockParam;
+	var currentBlockFlag = blockParam.collisionFlagList[transformParam.rotation % blockParam.stateNum];
+	//dumpCollisionFlag(currentBlockFlag, blockParam.range);
+
+	for (var i = 0; i < blockParam.range; i++) {
+		checkResult = (currentBlockFlag[i] << x) & this.existingBlockFlag[y + i];
 		if (checkResult != 0) {
 			return false;
 		}
 	}
 	return true;
+}
+
+Engine.prototype.fixBlock = function() {
+	console.log('fixBlock');
+	var currentBlock = this.currentBlock;
+	var transformParam = currentBlock.transformParam;
+	var x = transformParam.x + WALL_RANGE;
+	var y = transformParam.y;
+
+	var blockParam = currentBlock.blockParam;
+	var stateNum = blockParam.stateNum;
+	var rotationState = transformParam.rotation % stateNum;
+	var currentBlockFlag = blockParam.collisionFlagList[rotationState];
+
+	var fullLineIndexList = new Array();
+	for (var i = 0; i < blockParam.range; i++) {
+		var lineIndex = y + i;
+		if (lineIndex >= ROW_NUM) {
+			break;
+		}
+		this.existingBlockFlag[lineIndex] |= currentBlockFlag[i] << x;
+		if (this.existingBlockFlag[lineIndex] == FULL_LINE_FLAG) {
+			fullLineIndexList.push(lineIndex);
+		}
+	}
+
+	var tilePosList = blockParam.tilePosSet[rotationState];
+	for (var i = 0; i < currentBlock.tileList.length; i++) {
+		var tile = currentBlock.tileList[i];
+		tile.setShiftDownOffset(rotationState);
+		var tilePosY = tilePosList[i][1];
+		this.existingTileList[y + tilePosY].push(tile);
+	}
+
+	this.currentBlock = null;
+	return fullLineIndexList;
+}
+
+Engine.prototype.deleteLine = function(lineIndex) {
+	console.log('deleteLine: index = ' + lineIndex);
+	var tileList = this.existingTileList[lineIndex];
+	for (var i = 0; i < tileList.length; i++) {
+		tileList[i].removeDom();
+	}
+}
+
+Engine.prototype.shiftBlock = function(deleteLineIndexList) {
+	var deleteLineNum = deleteLineIndexList.length;
+	for (var i = deleteLineNum - 1; i >= 0; i--) { // begin with large index
+		var deleteLineIndex = deleteLineIndexList[i];
+		for (var j = 0; j < deleteLineIndex; j++) {
+			var tileList = this.existingTileList[j];
+			for (var k = 0; k < tileList.length; k++) {
+				tileList[k].shiftDown(this.tileSize);
+			}
+		}
+		this.existingBlockFlag.splice(deleteLineIndex, 1);
+		this.existingTileList.splice(deleteLineIndex, 1);
+	}
+
+	for (var i = 0; i < deleteLineNum; i++) {
+		this.existingBlockFlag.unshift(WALL_FLAG);
+		this.existingTileList.unshift(new Array());
+	}
 }

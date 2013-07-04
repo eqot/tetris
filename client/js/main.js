@@ -77,20 +77,22 @@
 		executeBlockEvent(blockEvent);
 	}
 
+	var engine;
+
 	// Execute block event like adding and moving block
 	function executeBlockEvent (blockEvent) {
 		if (blockEvent !== undefined) {
 			if (blockEvent === BlockEvent.ADD) {
 				var blockType = Math.floor( Math.random() * 7);
-				createBlock(blockType);
+				engine.createBlock(blockType);
 			} else {
-				moveBlock(blockEvent);
+				engine.moveBlock(blockEvent);
 			}
 		}
 	}
 
 	function mainLoop() {
-		gameStart();
+		engine = new Engine();
 	}
 
 })();
