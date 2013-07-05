@@ -1,3 +1,6 @@
+/* global Tile, TransformParam, BlockEvent */
+
+'use strict';
 
 var ROTATION_DEGREE = 90;
 var ANIMATION_DURATION = '0.3s';
@@ -38,7 +41,7 @@ Block.prototype.createDom = function(blockParam) {
 
 	$('#blockArea').append($block);
 	this.$block = $block;
-}
+};
 
 Block.prototype.move = function(blockEvent) {
 	var transformParam = this.transformParam;
@@ -47,18 +50,18 @@ Block.prototype.move = function(blockEvent) {
 				+ ', rotate = ' + transformParam.rotation);
 	this.updateTransformOrigin();
 	this.updateTransform();
-}
+};
 
 Block.prototype.updateTransform = function() {
 	this.$block.css('-webkit-transform', 'rotate(' + this.transformParam.rotation * ROTATION_DEGREE
 					+ 'deg) translate(' + this.transformParam.x * this.tileSize + 'px, '
 					+ (this.transformParam.y * this.tileSize + this.topMargin) + 'px)');
-}
+};
 
 Block.prototype.updateTransformOrigin = function() {
 	this.$block.css('-webkit-transform-origin', (this.transformParam.x + this.rotationCenterOffset) * this.tileSize
 					+ 'px ' + ((this.transformParam.y + this.rotationCenterOffset) * this.tileSize + this.topMargin) + 'px');
-}
+};
 
 function Tile() {
 	// used for shift block
@@ -75,11 +78,11 @@ Tile.prototype.createDom = function(tileSize, x, y, color) {
 	$tile.css('background-color', color);
 	$tile.css('-webkit-transition', ANIMATION_DURATION);
 	this.$tile = $tile;
-}
+};
 
 Tile.prototype.removeDom = function() {
 	this.$tile.remove();
-}
+};
 
 Tile.prototype.setShiftDownOffset = function(rotationState) {
 	var rotationMatrixNum = ROTATION_MATRIX_LIST.length;
@@ -89,14 +92,14 @@ Tile.prototype.setShiftDownOffset = function(rotationState) {
 	// (0 1) * rotationMatrix
 	this.shiftDownX = coodinateRotationMatrix[0][1];
 	this.shiftDownY = coodinateRotationMatrix[1][1];
-}
+};
 
 Tile.prototype.shiftDown = function(tileSize) {
 	this.x += this.shiftDownX;
 	this.y += this.shiftDownY;
 	this.$tile.css('-webkit-transform', 'translate(' + this.x * tileSize + 'px, '
 				   + this.y * tileSize + 'px)');
-}
+};
 
 function TransformParam(x, y, rotation) {
 	this.x = x;
@@ -121,11 +124,11 @@ TransformParam.prototype.move = function(blockEvent) {
 	default:
 		break;
 	}
-}
+};
 
-TransformParam.prototype.copy = function(blockEvent) {
+TransformParam.prototype.copy = function() {
 	return new TransformParam(this.x, this.y, this.rotation);
-}
+};
 
 function BlockParam(placement, color, range) {
 	this.placement = placement;
@@ -186,17 +189,17 @@ BlockParam.prototype.generateCollisionFlag = function() {
 	// 	console.log('rotate: ' + (i * 90));
 	// 	dumpCollisionFlag(collisionFlagList[i], range);
 	// }
-}
+};
 
 function dumpCollisionFlag(collisionFlag, range) {
 	for (var y = 0; y < range; y++) {
 		var flag = collisionFlag[y];
 		var displayStr = '';
 		for (var x = 0; x < range; x++) {
-			if ((flag & 0x01 << x) == 0) {
-				displayStr += '□'
+			if ((flag & 0x01 << x) === 0) {
+				displayStr += '□';
 			} else {
-				displayStr += '■'
+				displayStr += '■';
 			}
 		}
 		console.log(displayStr);
