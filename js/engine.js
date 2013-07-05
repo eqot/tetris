@@ -1,7 +1,5 @@
 
-var ROW_NUM = 15;
 var COLUMN_NUM = 10;
-
 var WALL_RANGE = 4; // max block range
 var LEFT_WALL_FLAG = (0x01 << WALL_RANGE) - 1;
 var RIGHT_WALL_FLAG = LEFT_WALL_FLAG << WALL_RANGE + COLUMN_NUM;
@@ -19,17 +17,21 @@ BlockEvent = {
 
 function Engine() {
 	this.tileSize = $('#blockArea').width() / COLUMN_NUM;
-	this.topMargin = $('#blockArea').height() - this.tileSize * ROW_NUM;
-	console.log('tileSize = ' + this.tileSize + ', topMargin = ' + this.topMargin);
+	var blockAreaHeight = $('#blockArea').height();
+	var rowNum = blockAreaHeight / this.tileSize | 0;
+	this.rowNum = rowNum;
+	this.topMargin = blockAreaHeight - this.tileSize * rowNum;
+	console.log('tileSize = ' + this.tileSize + ', rowNum = ' + rowNum
+				+ ', topMargin = ' + this.topMargin);
 
 	// initialize existing block flag
-	this.existingBlockFlag = new Array(ROW_NUM + 1);
-	this.existingTileList = new Array(ROW_NUM);
-	for (var i = 0; i < ROW_NUM; i++) {
+	this.existingBlockFlag = new Array(rowNum + 1);
+	this.existingTileList = new Array(rowNum);
+	for (var i = 0; i < rowNum; i++) {
 		this.existingBlockFlag[i] = WALL_FLAG;
 		this.existingTileList[i] = new Array();
 	}
-	this.existingBlockFlag[ROW_NUM] = FULL_LINE_FLAG; // last line
+	this.existingBlockFlag[rowNum] = FULL_LINE_FLAG; // last line
 }
 
 Engine.prototype.createBlock = function(blockType) {
@@ -87,7 +89,7 @@ Engine.prototype.fixBlock = function() {
 	var fullLineIndexList = new Array();
 	for (var i = 0; i < blockParam.range; i++) {
 		var lineIndex = y + i;
-		if (lineIndex >= ROW_NUM) {
+		if (lineIndex >= this.rowNum) {
 			break;
 		}
 		this.existingBlockFlag[lineIndex] |= currentBlockFlag[i] << x;
