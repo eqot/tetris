@@ -1,3 +1,6 @@
+/* global Block */
+
+'use strict';
 
 var COLUMN_NUM = 10;
 var WALL_RANGE = 4; // max block range
@@ -6,7 +9,7 @@ var RIGHT_WALL_FLAG = LEFT_WALL_FLAG << WALL_RANGE + COLUMN_NUM;
 var WALL_FLAG = LEFT_WALL_FLAG | RIGHT_WALL_FLAG; // 111100...001111
 var FULL_LINE_FLAG = (0x01 << WALL_RANGE * 2 + COLUMN_NUM) - 1;
 
-BlockEvent = {
+var BlockEvent = {
 	LEFT: 0,
 	RIGHT: 1,
 	DOWN: 2,
@@ -29,23 +32,23 @@ function Engine() {
 	this.existingTileList = new Array(rowNum);
 	for (var i = 0; i < rowNum; i++) {
 		this.existingBlockFlag[i] = WALL_FLAG;
-		this.existingTileList[i] = new Array();
+		this.existingTileList[i] = [];
 	}
 	this.existingBlockFlag[rowNum] = FULL_LINE_FLAG; // last line
 }
 
 Engine.prototype.createBlock = function(blockType) {
 	this.currentBlock = new Block(blockType, this.tileSize, this.topMargin, COLUMN_NUM);
-}
+};
 
 Engine.prototype.moveBlock = function(blockEvent) {
-	if (this.currentBlock == null) {
+	if (this.currentBlock === undefined) {
 		return;
 	}
 
 	if (this.collisionCheck(blockEvent)) {
 		this.currentBlock.move(blockEvent);
-	} else if (blockEvent == BlockEvent.DOWN) {
+	} else if (blockEvent === BlockEvent.DOWN) {
 		var fullLineIndexList = this.fixBlock();
 		var fullLineNum = fullLineIndexList.length;
 		for (var i = 0; i < fullLineNum; i++) {
@@ -53,7 +56,7 @@ Engine.prototype.moveBlock = function(blockEvent) {
 		}
 		this.shiftBlock(fullLineIndexList);
 	}
-}
+};
 
 Engine.prototype.collisionCheck = function(blockEvent) {
 	var transformParam = this.currentBlock.transformParam.copy();
@@ -66,13 +69,13 @@ Engine.prototype.collisionCheck = function(blockEvent) {
 	//dumpCollisionFlag(currentBlockFlag, blockParam.range);
 
 	for (var i = 0; i < blockParam.range; i++) {
-		checkResult = (currentBlockFlag[i] << x) & this.existingBlockFlag[y + i];
-		if (checkResult != 0) {
+		var checkResult = (currentBlockFlag[i] << x) & this.existingBlockFlag[y + i];
+		if (checkResult !== 0) {
 			return false;
 		}
 	}
 	return true;
-}
+};
 
 Engine.prototype.fixBlock = function() {
 	console.log('fixBlock');
@@ -86,14 +89,14 @@ Engine.prototype.fixBlock = function() {
 	var rotationState = transformParam.rotation % stateNum;
 	var currentBlockFlag = blockParam.collisionFlagList[rotationState];
 
-	var fullLineIndexList = new Array();
+	var fullLineIndexList = [];
 	for (var i = 0; i < blockParam.range; i++) {
 		var lineIndex = y + i;
 		if (lineIndex >= this.rowNum) {
 			break;
 		}
 		this.existingBlockFlag[lineIndex] |= currentBlockFlag[i] << x;
-		if (this.existingBlockFlag[lineIndex] == FULL_LINE_FLAG) {
+		if (this.existingBlockFlag[lineIndex] === FULL_LINE_FLAG) {
 			fullLineIndexList.push(lineIndex);
 		}
 	}
@@ -108,7 +111,7 @@ Engine.prototype.fixBlock = function() {
 
 	this.currentBlock = null;
 	return fullLineIndexList;
-}
+};
 
 Engine.prototype.deleteLine = function(lineIndex) {
 	console.log('deleteLine: index = ' + lineIndex);
@@ -116,7 +119,7 @@ Engine.prototype.deleteLine = function(lineIndex) {
 	for (var i = 0; i < tileList.length; i++) {
 		tileList[i].removeDom();
 	}
-}
+};
 
 Engine.prototype.shiftBlock = function(deleteLineIndexList) {
 	var deleteLineNum = deleteLineIndexList.length;
@@ -134,6 +137,6 @@ Engine.prototype.shiftBlock = function(deleteLineIndexList) {
 
 	for (var i = 0; i < deleteLineNum; i++) {
 		this.existingBlockFlag.unshift(WALL_FLAG);
-		this.existingTileList.unshift(new Array());
+		this.existingTileList.unshift([]);
 	}
-}
+};
