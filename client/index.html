@@ -7,8 +7,8 @@
 
     <title>Tetris</title>
 
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/tetris.css">
+    <link rel="stylesheet" href="js/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/title.css">
 
     <script src="js/vendor/jquery-1.10.1.min.js"></script>
     <script src="js/block.js"></script>
@@ -17,16 +17,31 @@
 </head>
 
 <body>
-	<div id="blockArea">
+	<div class="container">
+		<div class="hero-unit">
+			<p>
+				<h1>Tetris</h1>
+			</p>
+
+			<p>This is a Tetris game which is based on web technologies
+				and allows you to play with your friends.</p>
+		</div>
+
+		<form class="form-horizontal span6 offset2">
+			<div class="control-group">
+				<label class="control-label" for="inputNickname">Nickname</label>
+				<div class="controls">
+					<input type="text" id="inputNickname" placeholder="Nickname">
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<a href="game.html" class="btn btn-large btn-primary">Start game!</a>
+				</div>
+			</div>
+		</form>
 	</div>
 
-	<div id="controller">
-		<button class="blockEvent" id="left">←</button>
-		<button class="blockEvent" id="rotate">◯</button>
-		<button class="blockEvent" id="right">→</button>
-		<button class="blockEvent" id="down">↓</button>
-		<button class="blockEvent" id="add">add</button>
-	</div>
 </body>
 
 </html>
