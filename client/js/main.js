@@ -1,4 +1,4 @@
-/*global Engine, BlockEvent */
+/*global Engine, BlockEvent, EnemyStatus */
 
 'use strict';
 
@@ -39,6 +39,9 @@
 		// Set an event listener for window size to be changed
 		$(window).resize(adjustBlockAreaSize);
 		adjustBlockAreaSize();
+
+		var enemyStatus = new EnemyStatus();
+		enemyStatus.render();
 	}
 
 	// Adjust block area size to window size
