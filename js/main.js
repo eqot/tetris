@@ -1,3 +1,6 @@
+/*global Engine, BlockEvent */
+
+'use strict';
 
 (function() {
 
@@ -20,7 +23,7 @@
 		13: BlockEvent.ADD		// Enter key
 	};
 
-	$(document).ready(function($) {
+	$(document).ready(function() {
 		initialize();
 		mainLoop();
 	});
@@ -102,7 +105,7 @@
 			return;
 		}
 
-		if (engine.currentBlock == null) {
+		if (engine.currentBlock === null) {
 			executeBlockEvent(BlockEvent.ADD);
 		} else {
 			executeBlockEvent(BlockEvent.DOWN);
