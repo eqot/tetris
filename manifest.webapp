@@ -1,0 +1,13 @@
+{
+  "name": "Tetris",
+  "description": "This is a Tetris game which is based on web technologies.",
+  "launch_path": "/index.html",
+  "icons": {
+    "128": "/images/icon-128.png"
+  },
+  "developer": {
+    "name": "Ikuo Terado",
+    "url": "https://github.com/eqot/"
+  },
+  "default_locale": "en"
+}
