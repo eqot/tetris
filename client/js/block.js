@@ -98,15 +98,15 @@ var ShiftDirection = {
 	DOWN: 1,
 };
 
-Tile.prototype.shift = function(direction, tileSize) {
+Tile.prototype.shift = function(direction, distance, tileSize) {
 	switch (direction) {
 	case ShiftDirection.UP:
-		this.x -= this.shiftOffsetVector[0];
-		this.y -= this.shiftOffsetVector[1];
+		this.x -= this.shiftOffsetVector[0] * distance;
+		this.y -= this.shiftOffsetVector[1] * distance;
 		break;
 	case ShiftDirection.DOWN:
-		this.x += this.shiftOffsetVector[0];
-		this.y += this.shiftOffsetVector[1];
+		this.x += this.shiftOffsetVector[0] * distance;
+		this.y += this.shiftOffsetVector[1] * distance;
 		break;
 	default:
 		break;
