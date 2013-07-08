@@ -84,19 +84,33 @@ Tile.prototype.removeDom = function() {
 	this.$tile.remove();
 };
 
-Tile.prototype.setShiftDownOffset = function(rotationState) {
+Tile.prototype.setRotationState = function(rotationState) {
 	var rotationMatrixNum = ROTATION_MATRIX_LIST.length;
 	// inverse because coodinate rotation
 	var inverseRotationState = (rotationMatrixNum - rotationState) % rotationMatrixNum;
 	var coodinateRotationMatrix = ROTATION_MATRIX_LIST[inverseRotationState];
-	// (0 1) * rotationMatrix
-	this.shiftDownX = coodinateRotationMatrix[0][1];
-	this.shiftDownY = coodinateRotationMatrix[1][1];
+	// rotationMatrix * [0 1]
+	this.shiftOffsetVector = [coodinateRotationMatrix[0][1], coodinateRotationMatrix[1][1]];
 };
 
-Tile.prototype.shiftDown = function(tileSize) {
-	this.x += this.shiftDownX;
-	this.y += this.shiftDownY;
+var ShiftDirection = {
+	UP: 0,
+	DOWN: 1,
+};
+
+Tile.prototype.shift = function(direction, tileSize) {
+	switch (direction) {
+	case ShiftDirection.UP:
+		this.x -= this.shiftOffsetVector[0];
+		this.y -= this.shiftOffsetVector[1];
+		break;
+	case ShiftDirection.DOWN:
+		this.x += this.shiftOffsetVector[0];
+		this.y += this.shiftOffsetVector[1];
+		break;
+	default:
+		break;
+	}
 	this.$tile.css('-webkit-transform', 'translate(' + this.x * tileSize + 'px, '
 				   + this.y * tileSize + 'px)');
 };

@@ -90,8 +90,7 @@
 	function executeBlockEvent (blockEvent) {
 		if (blockEvent !== undefined) {
 			if (blockEvent === BlockEvent.ADD) {
-				var blockType = Math.floor( Math.random() * 7);
-				engine.createBlock(blockType);
+				engine.insertLines(1);
 			} else if (blockEvent === BlockEvent.PAUSE) {
 				pauseFlag = !pauseFlag;
 				if (!pauseFlag) {
@@ -109,7 +108,8 @@
 		}
 
 		if (engine.currentBlock === null) {
-			executeBlockEvent(BlockEvent.ADD);
+			var blockType = Math.floor( Math.random() * BLOCK_PARAM_LIST.length);
+			engine.createBlock(blockType);
 		} else {
 			executeBlockEvent(BlockEvent.DOWN);
 		}
