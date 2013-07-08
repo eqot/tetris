@@ -128,7 +128,7 @@ Engine.prototype.deleteLines = function(indexList) {
 		for (var j = 0; j < deleteLineIndex; j++) {
 			var tileList = this.existingTileList[j];
 			for (var k = 0; k < tileList.length; k++) {
-				tileList[k].shift(ShiftDirection.DOWN, this.tileSize);
+				tileList[k].shift(ShiftDirection.DOWN, 1, this.tileSize);
 			}
 		}
 
@@ -149,7 +149,7 @@ Engine.prototype.insertLines = function(insertLineNum) {
 	for (var i = 0; i < this.rowNum; i++) {
 		var tileList = this.existingTileList[i];
 		for (var j = 0; j < tileList.length; j++) {
-			tileList[j].shift(ShiftDirection.UP, this.tileSize);
+			tileList[j].shift(ShiftDirection.UP, insertLineNum, this.tileSize);
 		}
 	}
 
