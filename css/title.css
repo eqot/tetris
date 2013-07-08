@@ -6,3 +6,13 @@
 .hero-unit h1 {
 	font-size: 100px;
 }
+
+@media (max-width: 480px) {
+	.hero-unit {
+		padding: 20px;
+	}
+
+	.hero-unit h1 {
+		font-size: 60px;
+	}
+}
