@@ -1,4 +1,4 @@
-/* global Block */
+/* global Block, Tile, ShiftDirection */
 
 'use strict';
 
@@ -19,7 +19,7 @@ var BlockEvent = {
 	PAUSE: 5
 };
 
-function Engine() {
+function Engine(tileUpdateListener) {
 	this.tileSize = $('#blockArea').width() / COLUMN_NUM;
 	var blockAreaHeight = $('#blockArea').height();
 	var rowNum = blockAreaHeight / this.tileSize | 0;
@@ -38,6 +38,8 @@ function Engine() {
 	this.existingTileCollisionFlag[rowNum] = FULL_LINE_FLAG; // last line
 	this.currentBlock = null;
 
+	this.tileUpdateListener = tileUpdateListener;
+
 	this.insertLineVacantIndex = Math.floor( Math.random() * COLUMN_NUM);
 }
 
@@ -46,7 +48,7 @@ Engine.prototype.createBlock = function(blockType) {
 };
 
 Engine.prototype.moveBlock = function(blockEvent) {
-	if (this.currentBlock == null) {
+	if (this.currentBlock === null) {
 		return;
 	}
 
@@ -109,6 +111,7 @@ Engine.prototype.fixBlock = function() {
 	}
 
 	this.deleteLines(fullLineIndexList);
+	this.tileUpdateListener(this.existingTileCollisionFlag);
 	this.currentBlock = null;
 };
 
@@ -119,16 +122,16 @@ Engine.prototype.deleteLines = function(indexList) {
 		console.log('deleteLine: index = ' + deleteLineIndex);
 
 		// remove tiles
-		var tileList = this.existingTileList[deleteLineIndex];
-		for (var j = 0; j < tileList.length; j++) {
-			tileList[j].removeDom();
+		var removeTileLine = this.existingTileList[deleteLineIndex];
+		for (var j = 0; j < removeTileLine.length; j++) {
+			removeTileLine[j].removeDom();
 		}
 
 		// shift down existing tiles
 		for (var j = 0; j < deleteLineIndex; j++) {
-			var tileList = this.existingTileList[j];
-			for (var k = 0; k < tileList.length; k++) {
-				tileList[k].shift(ShiftDirection.DOWN, 1, this.tileSize);
+			var existingTileLine = this.existingTileList[j];
+			for (var k = 0; k < existingTileLine.length; k++) {
+				existingTileLine[k].shift(ShiftDirection.DOWN, 1, this.tileSize);
 			}
 		}
 
@@ -147,9 +150,9 @@ Engine.prototype.deleteLines = function(indexList) {
 Engine.prototype.insertLines = function(insertLineNum) {
 	// shift up existing tiles
 	for (var i = 0; i < this.rowNum; i++) {
-		var tileList = this.existingTileList[i];
-		for (var j = 0; j < tileList.length; j++) {
-			tileList[j].shift(ShiftDirection.UP, insertLineNum, this.tileSize);
+		var existingTileLine = this.existingTileList[i];
+		for (var j = 0; j < existingTileLine.length; j++) {
+			existingTileLine[j].shift(ShiftDirection.UP, insertLineNum, this.tileSize);
 		}
 	}
 
@@ -167,7 +170,7 @@ Engine.prototype.insertLines = function(insertLineNum) {
 	// insert lines
 	for (var y = this.rowNum - insertLineNum; y < this.rowNum; y++) {
 		var collisionFlag = WALL_FLAG;
-		var tileList = [];
+		var insertTileLine = [];
 		for (var x = 0; x < COLUMN_NUM; x++) {
 			if (x === this.insertLineVacantIndex) {
 				continue;
@@ -177,9 +180,11 @@ Engine.prototype.insertLines = function(insertLineNum) {
 			$('#blockArea').append(tile.$tile);
 			tile.setRotationState(0);
 			collisionFlag |=LEFT_EDGE_FLAG << x;
-			tileList.push(tile);
+			insertTileLine.push(tile);
 		}
 		this.existingTileCollisionFlag.splice(y, 0, collisionFlag);
-		this.existingTileList.push(tileList);
+		this.existingTileList.push(insertTileLine);
 	}
+
+	this.tileUpdateListener(this.existingTileCollisionFlag);
 };
