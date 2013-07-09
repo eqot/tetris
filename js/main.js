@@ -9,6 +9,7 @@
 		'left':   BlockEvent.LEFT,
 		'right':  BlockEvent.RIGHT,
 		'down':   BlockEvent.DOWN,
+		'up':     BlockEvent.ROTATE,
 		'rotate': BlockEvent.ROTATE,
 		'add':    BlockEvent.ADD
 	};
@@ -35,6 +36,11 @@
 
 		// Set an event listener for keys to be pressed
 		$(document).keydown(onKeyPress);
+
+		// Set an event listener for swipe gestures
+		$(window).hammer({
+			swipe_velocity: 0.2
+		}).on('swipe', onSwipe);
 
 		// Set an event listener for window size to be changed
 		$(window).resize(adjustBlockAreaSize);
@@ -80,6 +86,13 @@
 	function onKeyPress (event)  {
 		var code = event.keyCode;
 		var blockEvent = KEY_MAP[code];
+		executeBlockEvent(blockEvent);
+	}
+
+	// Handle swipe gesture event
+	function onSwipe (event) {
+		var code = event.gesture.direction;
+		var blockEvent = BUTTON_MAP[code];
 		executeBlockEvent(blockEvent);
 	}
 
