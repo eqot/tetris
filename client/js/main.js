@@ -29,6 +29,10 @@
 		mainLoop();
 	});
 
+	var engine;
+	var enemyStatus;
+	var pauseFlag = false;
+
 	// Initialize
 	function initialize() {
 		// Set an event listener for buttons to be pressed
@@ -46,8 +50,7 @@
 		$(window).resize(adjustBlockAreaSize);
 		adjustBlockAreaSize();
 
-		var enemyStatus = new EnemyStatus();
-		enemyStatus.render();
+		enemyStatus = new EnemyStatus();
 	}
 
 	// Adjust block area size to window size
@@ -115,6 +118,11 @@
 		}
 	}
 
+	function mainLoop() {
+		engine = new Engine(onTileUpdated);
+		update();
+	}
+
 	function update() {
 		if (pauseFlag) {
 			return;
@@ -126,13 +134,13 @@
 		} else {
 			executeBlockEvent(BlockEvent.DOWN);
 		}
+
 		setTimeout(function() {
 			update();
 		}, 1000);
 	}
 
-	function mainLoop() {
-		engine = new Engine();
-		update();
+	function onTileUpdated(existingTileCollisionFlag) {
+		enemyStatus.render(existingTileCollisionFlag);
 	}
 })();

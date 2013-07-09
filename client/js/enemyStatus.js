@@ -1,10 +1,16 @@
+/* global COLUMN_NUM, LEFT_EDGE_FLAG */
+
 'use strict';
+
+var CANVAS_WIDTH = 100;
+var CANVAS_HEIGHT = 200;
+var ENEMY_TILE_SIZE = CANVAS_WIDTH / COLUMN_NUM;
 
 function EnemyStatus () {
 	this.canvas = $('#enemyStatus');
 
-	this.width = 100;
-	this.height = 200;
+	this.width = CANVAS_WIDTH;
+	this.height = CANVAS_HEIGHT;
 
 	this.canvas.attr('width', this.width);
 	this.canvas.attr('height', this.height);
@@ -22,10 +28,16 @@ EnemyStatus.prototype.clear = function () {
 };
 
 // Render blocks in canvas
-EnemyStatus.prototype.render = function () {
+EnemyStatus.prototype.render = function (tileCollisionFlag) {
 	this.clear();
-
-	// Render dummy block
 	this.context.fillStyle = 'white';
-	this.context.fillRect(20, 20, 25, 25);
+
+	for (var y = 0; y < tileCollisionFlag.length; y++) {
+		var lineCollisionFlag = tileCollisionFlag[y];
+		for (var x = 0; x < COLUMN_NUM; x++) {
+			if ((LEFT_EDGE_FLAG << x) & lineCollisionFlag) {
+				this.context.fillRect(ENEMY_TILE_SIZE * x, ENEMY_TILE_SIZE * y, ENEMY_TILE_SIZE, ENEMY_TILE_SIZE);
+			}
+		}
+	}
 };
