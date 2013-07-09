@@ -33,14 +33,26 @@ Block.prototype.createDom = function(blockParam) {
 	var tileNum = blockParam.placement.length;
 	this.tileList = new Array(tileNum);
 	for (var i = 0; i < tileNum; i++) {
-		var tile = new Tile();
-		tile.createDom(this.tileSize, blockParam.placement[i][0], blockParam.placement[i][1], blockParam.color);
+		var tile = new Tile(blockParam.placement[i][0], blockParam.placement[i][1], blockParam.color,
+							this.tileSize, this.topMargin);
 		$block.append(tile.$tile);
 		this.tileList[i] = tile;
 	}
 
-	$('#blockArea').append($block);
 	this.$block = $block;
+};
+
+Block.prototype.removeDom = function() {
+	this.$block.remove();
+};
+
+Block.prototype.setTileSize = function(tileSize) {
+	this.tileSize = tileSize;
+	for (var i = 0; i < this.tileList.length; i++) {
+		this.tileList[i].setTileSize(tileSize);
+	}
+	this.updateTransformOrigin();
+	this.updateTransform();
 };
 
 Block.prototype.move = function(blockEvent) {
@@ -63,56 +75,55 @@ Block.prototype.updateTransformOrigin = function() {
 					+ 'px ' + ((this.transformParam.y + this.rotationCenterOffset) * this.tileSize + this.topMargin) + 'px');
 };
 
-function Tile() {
-	// used for shift block
-	this.x = 0;
-	this.y = 0;
+function Tile(x, y, color, tileSize, topMargin) {
+	this.x = x;
+	this.y = y;
+	this.createDom(tileSize, color);
+	this.tileSize = tileSize;
+	this.topMargin = topMargin;
+	this.setTileSize(tileSize);
 }
 
-Tile.prototype.createDom = function(tileSize, x, y, color) {
+Tile.prototype.createDom = function(tileSize, color) {
 	var $tile = $('<div/>').addClass('tile');
-	$tile.css('width', tileSize);
-	$tile.css('height', tileSize);
-	$tile.css('left', x * tileSize);
-	$tile.css('top', y * tileSize);
+	this.$tile = $tile;
 	$tile.css('background-color', color);
 	$tile.css('-webkit-transition', ANIMATION_DURATION);
-	this.$tile = $tile;
 };
 
 Tile.prototype.removeDom = function() {
 	this.$tile.remove();
 };
 
-Tile.prototype.setRotationState = function(rotationState) {
-	var rotationMatrixNum = ROTATION_MATRIX_LIST.length;
-	// inverse because coodinate rotation
-	var inverseRotationState = (rotationMatrixNum - rotationState) % rotationMatrixNum;
-	var coodinateRotationMatrix = ROTATION_MATRIX_LIST[inverseRotationState];
-	// rotationMatrix * [0 1]
-	this.shiftOffsetVector = [coodinateRotationMatrix[0][1], coodinateRotationMatrix[1][1]];
-};
+Tile.prototype.setTileSize = function(tileSize) {
+	this.tileSize = tileSize
+	this.$tile.css('width', tileSize);
+	this.$tile.css('height', tileSize);
+	this.updateTransform();
+}
 
 var ShiftDirection = {
 	UP: 0,
 	DOWN: 1,
 };
 
-Tile.prototype.shift = function(direction, distance, tileSize) {
+Tile.prototype.shift = function(direction, distance) {
 	switch (direction) {
 	case ShiftDirection.UP:
-		this.x -= this.shiftOffsetVector[0] * distance;
-		this.y -= this.shiftOffsetVector[1] * distance;
+		this.y -= distance;
 		break;
 	case ShiftDirection.DOWN:
-		this.x += this.shiftOffsetVector[0] * distance;
-		this.y += this.shiftOffsetVector[1] * distance;
+		this.y += distance;
 		break;
 	default:
 		break;
 	}
-	this.$tile.css('-webkit-transform', 'translate(' + this.x * tileSize + 'px, '
-				   + this.y * tileSize + 'px)');
+	this.updateTransform();
+};
+
+Tile.prototype.updateTransform = function() {
+	this.$tile.css('-webkit-transform', 'translate(' + this.x * this.tileSize + 'px, '
+				   + (this.y * this.tileSize + this.topMargin) + 'px)');
 };
 
 function TransformParam(x, y, rotation) {

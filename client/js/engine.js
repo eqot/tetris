@@ -20,15 +20,10 @@ var BlockEvent = {
 };
 
 function Engine(tileUpdateListener) {
-	this.tileSize = $('#blockArea').width() / COLUMN_NUM;
-	var blockAreaHeight = $('#blockArea').height();
-	var rowNum = blockAreaHeight / this.tileSize | 0;
+	var rowNum = COLUMN_NUM << 1;
 	this.rowNum = rowNum;
-	this.topMargin = blockAreaHeight - this.tileSize * rowNum;
-	console.log('tileSize = ' + this.tileSize + ', rowNum = ' + rowNum
-				+ ', topMargin = ' + this.topMargin);
 
-	// initialize existing block flag
+	// initialize existing tile
 	this.existingTileCollisionFlag = new Array(rowNum + 1);
 	this.existingTileList = new Array(rowNum);
 	for (var i = 0; i < rowNum; i++) {
@@ -38,13 +33,32 @@ function Engine(tileUpdateListener) {
 	this.existingTileCollisionFlag[rowNum] = FULL_LINE_FLAG; // last line
 	this.currentBlock = null;
 
+	this.setBlockAreaSize($('#blockArea').width(), $('#blockArea').height());
 	this.tileUpdateListener = tileUpdateListener;
-
 	this.insertLineVacantIndex = Math.floor( Math.random() * COLUMN_NUM);
 }
 
+Engine.prototype.setBlockAreaSize = function(width, height) {
+	this.tileSize = width / COLUMN_NUM;
+	//this.rowNum = height / this.tileSize | 0;
+	this.topMargin = height - this.tileSize * this.rowNum;
+	console.log('tileSize = ' + this.tileSize + ', topMargin = ' + this.topMargin);
+
+	for (var i = 0; i < this.rowNum; i++) {
+		var existingTileLine = this.existingTileList[i];
+		for (var j = 0; j < existingTileLine.length; j++) {
+			existingTileLine[j].setTileSize(this.tileSize);
+		}
+	}
+
+	if (this.currentBlock !== null) {
+		this.currentBlock.setTileSize(this.tileSize);
+	}
+};
+
 Engine.prototype.createBlock = function(blockType) {
 	this.currentBlock = new Block(blockType, this.tileSize, this.topMargin, COLUMN_NUM);
+	$('#blockArea').append(this.currentBlock.$block);
 };
 
 Engine.prototype.moveBlock = function(blockEvent) {
@@ -82,8 +96,6 @@ Engine.prototype.fixBlock = function() {
 	console.log('fixBlock');
 	var currentBlock = this.currentBlock;
 	var transformParam = currentBlock.transformParam;
-	var x = transformParam.x + WALL_RANGE;
-	var y = transformParam.y;
 
 	var blockParam = currentBlock.blockParam;
 	var stateNum = blockParam.stateNum;
@@ -92,23 +104,27 @@ Engine.prototype.fixBlock = function() {
 
 	var fullLineIndexList = [];
 	for (var i = 0; i < blockParam.range; i++) {
-		var lineIndex = y + i;
+		var lineIndex = transformParam.y + i;
 		if (lineIndex >= this.rowNum) {
 			break;
 		}
-		this.existingTileCollisionFlag[lineIndex] |= currentBlockCollisionFlag[i] << x;
+		this.existingTileCollisionFlag[lineIndex] |= currentBlockCollisionFlag[i] << transformParam.x + WALL_RANGE;
 		if (this.existingTileCollisionFlag[lineIndex] === FULL_LINE_FLAG) {
 			fullLineIndexList.push(lineIndex);
 		}
 	}
 
 	var tilePosList = blockParam.tilePosSet[rotationState];
+	var tileColor = blockParam.color;
 	for (var i = 0; i < currentBlock.tileList.length; i++) {
-		var tile = currentBlock.tileList[i];
-		tile.setRotationState(rotationState);
-		var tilePosY = tilePosList[i][1];
-		this.existingTileList[y + tilePosY].push(tile);
+		var tilePosX = transformParam.x + tilePosList[i][0];
+		var tilePosY = transformParam.y + tilePosList[i][1];
+
+		var fixedTile = new Tile(tilePosX, tilePosY, tileColor, this.tileSize, this.topMargin);
+		$('#blockArea').append(fixedTile.$tile);
+		this.existingTileList[tilePosY].push(fixedTile);
 	}
+	currentBlock.removeDom();
 
 	this.deleteLines(fullLineIndexList);
 	this.tileUpdateListener(this.existingTileCollisionFlag);
@@ -128,10 +144,10 @@ Engine.prototype.deleteLines = function(indexList) {
 		}
 
 		// shift down existing tiles
-		for (var j = 0; j < deleteLineIndex; j++) {
+		for (var j = deleteLineIndex - 1; j >= 0; j--) {
 			var existingTileLine = this.existingTileList[j];
 			for (var k = 0; k < existingTileLine.length; k++) {
-				existingTileLine[k].shift(ShiftDirection.DOWN, 1, this.tileSize);
+				existingTileLine[k].shift(ShiftDirection.DOWN, 1);
 			}
 		}
 
@@ -152,7 +168,7 @@ Engine.prototype.insertLines = function(insertLineNum) {
 	for (var i = 0; i < this.rowNum; i++) {
 		var existingTileLine = this.existingTileList[i];
 		for (var j = 0; j < existingTileLine.length; j++) {
-			existingTileLine[j].shift(ShiftDirection.UP, insertLineNum, this.tileSize);
+			existingTileLine[j].shift(ShiftDirection.UP, insertLineNum);
 		}
 	}
 
@@ -175,10 +191,8 @@ Engine.prototype.insertLines = function(insertLineNum) {
 			if (x === this.insertLineVacantIndex) {
 				continue;
 			}
-			var tile = new Tile();
-			tile.createDom(this.tileSize, x, y, 'DimGray');
+			var tile = new Tile(x, y, 'DimGray', this.tileSize, this.topMargin);
 			$('#blockArea').append(tile.$tile);
-			tile.setRotationState(0);
 			collisionFlag |=LEFT_EDGE_FLAG << x;
 			insertTileLine.push(tile);
 		}

@@ -76,6 +76,10 @@
 				blockArea.css('left', (width - (height / 2)) / 2);
 			}
 		}
+
+		if (engine !== undefined) {
+			engine.setBlockAreaSize(blockArea.width(), blockArea.height());
+		}
 	}
 
 	// Handle button press event
