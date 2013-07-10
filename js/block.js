@@ -13,17 +13,17 @@ var ROTATION_MATRIX_LIST = [[[1, 0], [0, 1]], [[0, -1], [1, 0]], [[-1, 0], [0, -
 function Block(blockType, tileSize, topMargin, columnNum) {
 	console.log('block create');
 
+	this.blockType = blockType;
 	var blockParam = BLOCK_PARAM_LIST[blockType];
 	this.blockParam = blockParam;
 	this.tileSize = tileSize;
 	this.topMargin = topMargin;
 
-	this.transformParam = new TransformParam(columnNum - blockParam.range >> 1, 0, 0);
+	this.transformParam = new TransformParam(0, 0, 0);
 	this.createDom(blockParam);
 	this.rotationCenterOffset = blockParam.range / 2.0;
 
 	this.updateTransform();
-	this.updateTransformOrigin();
 }
 
 Block.prototype.createDom = function(blockParam) {
@@ -46,33 +46,34 @@ Block.prototype.removeDom = function() {
 	this.$block.remove();
 };
 
+Block.prototype.setTransform = function(x, y, rotation) {
+	this.transformParam = new TransformParam(x, y, rotation);
+	this.updateTransform();
+};
+
 Block.prototype.setTileSize = function(tileSize) {
 	this.tileSize = tileSize;
 	for (var i = 0; i < this.tileList.length; i++) {
 		this.tileList[i].setTileSize(tileSize);
 	}
-	this.updateTransformOrigin();
 	this.updateTransform();
 };
 
 Block.prototype.move = function(blockEvent) {
 	var transformParam = this.transformParam;
 	transformParam.move(blockEvent);
-	console.log('block update: x = ' + transformParam.x + ', y = ' + transformParam.y
-				+ ', rotate = ' + transformParam.rotation);
-	this.updateTransformOrigin();
+	console.log('block update: x = ' + transformParam.x + ', y = ' + transformParam.y +
+				', rotate = ' + transformParam.rotation);
 	this.updateTransform();
 };
 
 Block.prototype.updateTransform = function() {
-	this.$block.css('-webkit-transform', 'rotate(' + this.transformParam.rotation * ROTATION_DEGREE
-					+ 'deg) translate(' + this.transformParam.x * this.tileSize + 'px, '
-					+ (this.transformParam.y * this.tileSize + this.topMargin) + 'px)');
-};
-
-Block.prototype.updateTransformOrigin = function() {
-	this.$block.css('-webkit-transform-origin', (this.transformParam.x + this.rotationCenterOffset) * this.tileSize
-					+ 'px ' + ((this.transformParam.y + this.rotationCenterOffset) * this.tileSize + this.topMargin) + 'px');
+	this.$block.css('-webkit-transform-origin',
+					(this.transformParam.x + this.rotationCenterOffset) * this.tileSize + 'px ' +
+					((this.transformParam.y + this.rotationCenterOffset) * this.tileSize + this.topMargin) + 'px');
+	this.$block.css('-webkit-transform', 'rotate(' + this.transformParam.rotation * ROTATION_DEGREE +
+					'deg) translate(' + this.transformParam.x * this.tileSize + 'px, ' +
+					(this.transformParam.y * this.tileSize + this.topMargin) + 'px)');
 };
 
 function Tile(x, y, color, tileSize, topMargin) {
@@ -96,11 +97,11 @@ Tile.prototype.removeDom = function() {
 };
 
 Tile.prototype.setTileSize = function(tileSize) {
-	this.tileSize = tileSize
+	this.tileSize = tileSize;
 	this.$tile.css('width', tileSize);
 	this.$tile.css('height', tileSize);
 	this.updateTransform();
-}
+};
 
 var ShiftDirection = {
 	UP: 0,
@@ -122,8 +123,8 @@ Tile.prototype.shift = function(direction, distance) {
 };
 
 Tile.prototype.updateTransform = function() {
-	this.$tile.css('-webkit-transform', 'translate(' + this.x * this.tileSize + 'px, '
-				   + (this.y * this.tileSize + this.topMargin) + 'px)');
+	this.$tile.css('-webkit-transform', 'translate(' + this.x * this.tileSize + 'px, ' +
+				   (this.y * this.tileSize + this.topMargin) + 'px)');
 };
 
 function TransformParam(x, y, rotation) {

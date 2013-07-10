@@ -1,4 +1,4 @@
-/*global Engine, BlockEvent, EnemyStatus */
+/*global Engine, BlockEvent, EnemyStatus, BLOCK_PARAM_LIST */
 
 'use strict';
 
@@ -46,11 +46,12 @@
 			swipe_velocity: 0.2
 		}).on('swipe', onSwipe);
 
+		engine = new Engine(onTileUpdated);
+		enemyStatus = new EnemyStatus();
+
 		// Set an event listener for window size to be changed
 		$(window).resize(adjustBlockAreaSize);
 		adjustBlockAreaSize();
-
-		enemyStatus = new EnemyStatus();
 	}
 
 	// Adjust block area size to window size
@@ -59,27 +60,35 @@
 		var height = $(window).height() - 40;
 
 		var blockArea = $('#blockArea');
+		var blockAreaWidth;
 		if (width >= height) {
 			// Landscape
-			blockArea.width(height / 2);
+			blockAreaWidth = height / 2;
+			blockArea.width(blockAreaWidth);
 			blockArea.height(height);
-			blockArea.css('left', (width - (height / 2)) / 2);
+			blockArea.css('left', (width - blockAreaWidth) / 2);
 		} else {
 			// Portrait
 			if (width * 2 < height) {
-				blockArea.width(width);
+				blockAreaWidth = width;
+				blockArea.width(blockAreaWidth);
 				blockArea.height(width * 2);
 				blockArea.css('left', 10);
 			} else {
-				blockArea.width(height / 2);
+				blockAreaWidth = height / 2;
+				blockArea.width(blockAreaWidth);
 				blockArea.height(height);
-				blockArea.css('left', (width - (height / 2)) / 2);
+				blockArea.css('left', (width - blockAreaWidth) / 2);
 			}
 		}
 
-		if (engine !== undefined) {
-			engine.setBlockAreaSize(blockArea.width(), blockArea.height());
-		}
+		var statusArea = $('#statusArea');
+		var statusAreaWidth = blockAreaWidth / 4;
+		statusArea.width(statusAreaWidth);
+
+		engine.setBlockAreaSize(blockArea.width(), blockArea.height());
+		engine.setNextBlockIndicatorSize(statusAreaWidth);
+		enemyStatus.setCanvasSize(statusAreaWidth);
 	}
 
 	// Handle button press event
@@ -103,9 +112,6 @@
 		executeBlockEvent(blockEvent);
 	}
 
-	var engine;
-	var pauseFlag = false;
-
 	// Execute block event like adding and moving block
 	function executeBlockEvent (blockEvent) {
 		if (blockEvent !== undefined) {
@@ -123,7 +129,7 @@
 	}
 
 	function mainLoop() {
-		engine = new Engine(onTileUpdated);
+		engine.initialize();
 		update();
 	}
 
@@ -132,7 +138,7 @@
 			return;
 		}
 
-		if (engine.currentBlock === null) {
+		if (!engine.currentBlock) {
 			var blockType = Math.floor( Math.random() * BLOCK_PARAM_LIST.length);
 			engine.createBlock(blockType);
 		} else {

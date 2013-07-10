@@ -2,21 +2,20 @@
 
 'use strict';
 
-var CANVAS_WIDTH = 100;
-var CANVAS_HEIGHT = 200;
-var ENEMY_TILE_SIZE = CANVAS_WIDTH / COLUMN_NUM;
-
 function EnemyStatus () {
 	this.canvas = $('#enemyStatus');
+	this.context = this.canvas[0].getContext('2d');
+}
 
-	this.width = CANVAS_WIDTH;
-	this.height = CANVAS_HEIGHT;
+EnemyStatus.prototype.setCanvasSize = function (size) {
+	this.width = size;
+	this.height = size * 2;
+	this.tileSize = this.width / COLUMN_NUM;
 
 	this.canvas.attr('width', this.width);
 	this.canvas.attr('height', this.height);
-
-	this.context = this.canvas[0].getContext('2d');
-}
+	this.clear();
+};
 
 // Clear canvas
 EnemyStatus.prototype.clear = function () {
@@ -32,11 +31,12 @@ EnemyStatus.prototype.render = function (tileCollisionFlag) {
 	this.clear();
 	this.context.fillStyle = 'white';
 
+	var tileSize = this.tileSize;
 	for (var y = 0; y < tileCollisionFlag.length; y++) {
 		var lineCollisionFlag = tileCollisionFlag[y];
 		for (var x = 0; x < COLUMN_NUM; x++) {
 			if ((LEFT_EDGE_FLAG << x) & lineCollisionFlag) {
-				this.context.fillRect(ENEMY_TILE_SIZE * x, ENEMY_TILE_SIZE * y, ENEMY_TILE_SIZE, ENEMY_TILE_SIZE);
+				this.context.fillRect(tileSize * x, tileSize * y, tileSize, tileSize);
 			}
 		}
 	}
