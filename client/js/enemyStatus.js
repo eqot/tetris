@@ -29,8 +29,8 @@ EnemyStatus.prototype.clear = function () {
 // Render blocks in canvas
 EnemyStatus.prototype.render = function (tileCollisionFlag) {
 	this.clear();
-	this.context.fillStyle = 'white';
 
+	this.context.fillStyle = 'white';
 	var tileSize = this.tileSize;
 	for (var y = 0; y < tileCollisionFlag.length; y++) {
 		var lineCollisionFlag = tileCollisionFlag[y];

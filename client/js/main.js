@@ -140,7 +140,10 @@
 
 		if (!engine.currentBlock) {
 			var blockType = Math.floor( Math.random() * BLOCK_PARAM_LIST.length);
-			engine.createBlock(blockType);
+			if (!engine.createBlock(blockType)) {
+				onGameOver();
+				return;
+			}
 		} else {
 			executeBlockEvent(BlockEvent.DOWN);
 		}
@@ -152,5 +155,12 @@
 
 	function onTileUpdated(existingTileCollisionFlag) {
 		enemyStatus.render(existingTileCollisionFlag);
+	}
+
+	function onGameOver() {
+		alert('Game Over');
+		engine.initialize();
+		$('#blockArea').empty();
+		enemyStatus.clear();
 	}
 })();
