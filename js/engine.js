@@ -77,11 +77,15 @@ Engine.prototype.createBlock = function(blockType) {
 		$('#blockArea').append(currentBlock.$block);
 		this.currentBlock = currentBlock;
 		this.nextBlock.$block.remove();
+		if (!this.collisionCheck(null)) {
+			return false;
+		}
 	}
 
 	var nextBlock = new Block(blockType, this.nextBlockTileSize, 0);
 	$('#nextBlockIndicator').append(nextBlock.$block);
 	this.nextBlock = nextBlock;
+	return true;
 };
 
 Engine.prototype.moveBlock = function(blockEvent) {
@@ -98,16 +102,16 @@ Engine.prototype.moveBlock = function(blockEvent) {
 
 Engine.prototype.collisionCheck = function(blockEvent) {
 	var transformParam = this.currentBlock.transformParam.copy();
-	transformParam.move(blockEvent);
-	var x = transformParam.x + WALL_RANGE;
-	var y = transformParam.y;
-
+	if (blockEvent !== null) {
+		transformParam.move(blockEvent);
+	}
 	var blockParam = this.currentBlock.blockParam;
 	var currentBlockCollisionFlag = blockParam.collisionFlagList[transformParam.rotation % blockParam.stateNum];
 	//dumpCollisionFlag(currentBlockCollisionFlag, blockParam.range);
-
+	var columnIndex = transformParam.x + WALL_RANGE;
 	for (var i = 0; i < blockParam.range; i++) {
-		var checkResult = (currentBlockCollisionFlag[i] << x) & this.existingTileCollisionFlag[y + i];
+		var rowIndex = transformParam.y + i;
+		var checkResult = (currentBlockCollisionFlag[i] << columnIndex) & this.existingTileCollisionFlag[rowIndex];
 		if (checkResult !== 0) {
 			return false;
 		}
@@ -126,14 +130,15 @@ Engine.prototype.fixBlock = function() {
 	var currentBlockCollisionFlag = blockParam.collisionFlagList[rotationState];
 
 	var fullLineIndexList = [];
+	var columnIndex = transformParam.x + WALL_RANGE;
 	for (var i = 0; i < blockParam.range; i++) {
-		var lineIndex = transformParam.y + i;
-		if (lineIndex >= this.rowNum) {
+		var rowIndex = transformParam.y + i;
+		if (rowIndex >= this.rowNum) {
 			break;
 		}
-		this.existingTileCollisionFlag[lineIndex] |= currentBlockCollisionFlag[i] << transformParam.x + WALL_RANGE;
-		if (this.existingTileCollisionFlag[lineIndex] === FULL_LINE_FLAG) {
-			fullLineIndexList.push(lineIndex);
+		this.existingTileCollisionFlag[rowIndex] |= currentBlockCollisionFlag[i] << columnIndex;
+		if (this.existingTileCollisionFlag[rowIndex] === FULL_LINE_FLAG) {
+			fullLineIndexList.push(rowIndex);
 		}
 	}
 
