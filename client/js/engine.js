@@ -3,7 +3,8 @@
 'use strict';
 
 var COLUMN_NUM = 10;
-var WALL_RANGE = 4; // max block range
+var MAX_BLOCK_RANGE = 4;
+var WALL_RANGE = MAX_BLOCK_RANGE;
 var LEFT_EDGE_FLAG = 0x01 << WALL_RANGE;
 var LEFT_WALL_FLAG = LEFT_EDGE_FLAG - 1;
 var RIGHT_WALL_FLAG = LEFT_WALL_FLAG << WALL_RANGE + COLUMN_NUM;
@@ -22,21 +23,22 @@ var BlockEvent = {
 function Engine(tileUpdateListener) {
 	var rowNum = COLUMN_NUM << 1;
 	this.rowNum = rowNum;
-
-	// initialize existing tile
 	this.existingTileCollisionFlag = new Array(rowNum + 1);
+	this.existingTileCollisionFlag[rowNum] = FULL_LINE_FLAG; // last line
 	this.existingTileList = new Array(rowNum);
-	for (var i = 0; i < rowNum; i++) {
+	this.tileUpdateListener = tileUpdateListener;
+}
+
+Engine.prototype.initialize = function() {
+	// initialize existing tile
+	for (var i = 0; i < this.rowNum; i++) {
 		this.existingTileCollisionFlag[i] = WALL_FLAG;
 		this.existingTileList[i] = [];
 	}
-	this.existingTileCollisionFlag[rowNum] = FULL_LINE_FLAG; // last line
-	this.currentBlock = null;
 
-	this.setBlockAreaSize($('#blockArea').width(), $('#blockArea').height());
-	this.tileUpdateListener = tileUpdateListener;
 	this.insertLineVacantIndex = Math.floor( Math.random() * COLUMN_NUM);
-}
+	this.currentBlock = null;
+};
 
 Engine.prototype.setBlockAreaSize = function(width, height) {
 	this.tileSize = width / COLUMN_NUM;
@@ -46,23 +48,44 @@ Engine.prototype.setBlockAreaSize = function(width, height) {
 
 	for (var i = 0; i < this.rowNum; i++) {
 		var existingTileLine = this.existingTileList[i];
+		if (!existingTileLine) {
+			continue;
+		}
 		for (var j = 0; j < existingTileLine.length; j++) {
 			existingTileLine[j].setTileSize(this.tileSize);
 		}
 	}
 
-	if (this.currentBlock !== null) {
+	if (this.currentBlock) {
 		this.currentBlock.setTileSize(this.tileSize);
 	}
 };
 
+Engine.prototype.setNextBlockIndicatorSize = function(size) {
+	$('#nextBlockIndicator').width(size);
+	$('#nextBlockIndicator').height(size);
+	this.nextBlockTileSize = size / MAX_BLOCK_RANGE;
+	if (this.nextBlock) {
+		this.nextBlock.setTileSize(this.nextBlockTileSize);
+	}
+};
+
 Engine.prototype.createBlock = function(blockType) {
-	this.currentBlock = new Block(blockType, this.tileSize, this.topMargin, COLUMN_NUM);
-	$('#blockArea').append(this.currentBlock.$block);
+	if (this.nextBlock) {
+		var currentBlock = new Block(this.nextBlock.blockType, this.tileSize, this.topMargin);
+		currentBlock.setTransform(COLUMN_NUM - currentBlock.blockParam.range >> 1, 0, 0);
+		$('#blockArea').append(currentBlock.$block);
+		this.currentBlock = currentBlock;
+		this.nextBlock.$block.remove();
+	}
+
+	var nextBlock = new Block(blockType, this.nextBlockTileSize, 0);
+	$('#nextBlockIndicator').append(nextBlock.$block);
+	this.nextBlock = nextBlock;
 };
 
 Engine.prototype.moveBlock = function(blockEvent) {
-	if (this.currentBlock === null) {
+	if (!this.currentBlock) {
 		return;
 	}
 

@@ -23,9 +23,19 @@
 	/* box-shadow: 5px 5px gray inset; */
 }
 
-#enemyStatus {
-	position: absolute;
-	top: 0;
-	right: 0;
+#statusArea {
+	width: 10%;
+	height: 10%;
 	opacity: 0.7;
+	position: absolute;
+	top: 2%;
+	right: 2%;
+}
+
+#nextBlockIndicator {
+	background-color: black;
+	border: 5px solid white;
+}
+
+#enemyStatus {
 }
