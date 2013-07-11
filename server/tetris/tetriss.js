@@ -15,7 +15,7 @@ var server = http.createServer(app);
 var io = io.listen(server);
 
 // all environments
-app.set('port', process.env.PORT || 80);
+app.set('port', process.env.PORT || 3001);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
@@ -36,7 +36,7 @@ app.get('/users', user.list);
 
 server.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
-  process.setuid(80);
+  //process.setuid(80);
 });
 
 var MAX_BLOCK_NUM = 1000;
@@ -77,7 +77,7 @@ io.sockets.on('connection', function(socket) {
   socket.on('erasedBlock', function(data) {
     console.log("erasedBlock row_num: " + data.row_num);
     var emptyColumn = Math.floor(Math.random() * WIDTH);
-    var opponentSessionId = sessionIds[~userId];
+    var opponentSessionId = sessionIds[userId ^ 1];
     io.sockets.socket(opponentSessionId).emit('disturbBlock', { row_num: data.row_num, empty_column: emptyColumn });
   });
 
