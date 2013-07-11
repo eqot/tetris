@@ -31,7 +31,8 @@
 	var client;
 	var engine;
 	var enemyStatus;
-	var pauseFlag = false;
+	var isPausing = false;
+	var isGameOver = false;
 
 	// Initialize
 	function initialize() {
@@ -115,17 +116,21 @@
 
 	// Execute block event like adding and moving block
 	function executeBlockEvent (blockEvent) {
-		if (blockEvent !== undefined) {
-			if (blockEvent === BlockEvent.ADD) {
-				engine.insertLines(1);
-			} else if (blockEvent === BlockEvent.PAUSE) {
-				pauseFlag = !pauseFlag;
-				if (!pauseFlag) {
-					update();
-				}
-			} else {
-				engine.moveBlock(blockEvent);
+		if (blockEvent === undefined) {
+			return;
+		}
+
+		if (blockEvent === BlockEvent.ADD) {
+			if (!engine.insertLines(1, 5)) {
+				onLoseGame();
 			}
+		} else if (blockEvent === BlockEvent.PAUSE) {
+			isPausing = !isPausing;
+			if (!isPausing) {
+				update();
+			}
+		} else {
+			engine.moveBlock(blockEvent);
 		}
 	}
 
@@ -134,12 +139,13 @@
 	}
 
 	function onStart(data) {
+		isGameOver = false;
 		engine.initialize();
 		update();
 	}
 
 	function update() {
-		if (pauseFlag) {
+		if (isPausing || isGameOver) {
 			return;
 		}
 
@@ -155,24 +161,31 @@
 	}
 
 	function onWinGame() {
+		isGameOver = true;
 		alert('You Win');
 		// engine.initialize();
 		// $('#blockArea').empty();
 		// enemyStatus.clear();
 	}
 
+	function onLoseGame() {
+		client.disconnect();
+		isGameOver = true;
+		alert('You Lose');
+	}
+
 	function onReceiveBlock(data) {
 		//var blockType = Math.floor( Math.random() * BLOCK_PARAM_LIST.length);
 		if (!engine.createBlock(data.block_type)) {
-			client.disconnect();
-			alert('You Lose');
-			return;
+			onLoseGame();
 		}
 	}
 
 	function onReceiveDisturbBlock(data) {
-		console.log("onReceiveDisturbBlock: num = " + data.row_num);
-		engine.insertLines(data.row_num);
+		console.log("onReceiveDisturbBlock: num = " + data.row_num + ", empty = " + data.empty_column);
+		if (!engine.insertLines(data.row_num, data.empty_column)) {
+			onLoseGame();
+		}
 	}
 
 	function onDeleteLines(deleteLineNum) {
