@@ -100,6 +100,7 @@ Tile.prototype.setTileSize = function(tileSize) {
 	this.tileSize = tileSize;
 	this.$tile.css('width', tileSize);
 	this.$tile.css('height', tileSize);
+	this.$tile.css('border-width', tileSize / 8);
 	this.updateTransform();
 };
 

@@ -18,9 +18,13 @@
 
 .tile {
 	position: absolute;
-	border: 5px solid gray;
+	border-style: solid; /* ridge; */
+	/* border-color: lightgray dimgray dimgray lightgray; */
+	border-color: rgba(255, 255, 255, 0.7) rgba(128, 128, 128, 0.7) rgba(128, 128, 128, 0.7) rgba(255, 255, 255, 0.7);
 	box-sizing: border-box;
-	/* box-shadow: 5px 5px gray inset; */
+	background: -webkit-gradient(linear, left top, right bottom, from(rgba(0, 0, 0, 0.3)), to(rgba(255, 255, 255, 0.5)));
+	/* background: -webkit-gradient(radial, center center, 0, center center, 30, from(rgba(255, 255, 255, 0)), to(rgba(255, 255, 255, 1))); */
+	/* -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.7) inset; */
 }
 
 #statusArea {
