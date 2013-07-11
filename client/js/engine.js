@@ -20,13 +20,14 @@ var BlockEvent = {
 	PAUSE: 5
 };
 
-function Engine(tileUpdateListener) {
+function Engine(onDeleteLines, onTileUpdated) {
 	var rowNum = COLUMN_NUM << 1;
 	this.rowNum = rowNum;
 	this.existingTileCollisionFlag = new Array(rowNum + 1);
 	this.existingTileCollisionFlag[rowNum] = FULL_LINE_FLAG; // last line
 	this.existingTileList = new Array(rowNum);
-	this.tileUpdateListener = tileUpdateListener;
+	this.onDeleteLines = onDeleteLines;
+	this.onTileUpdated = onTileUpdated;
 }
 
 Engine.prototype.initialize = function() {
@@ -154,8 +155,10 @@ Engine.prototype.fixBlock = function() {
 	}
 	currentBlock.removeDom();
 
-	this.deleteLines(fullLineIndexList);
-	this.tileUpdateListener(this.existingTileCollisionFlag);
+	if (fullLineIndexList.length > 0) {
+		this.deleteLines(fullLineIndexList);
+	}
+	this.onTileUpdated(this.existingTileCollisionFlag);
 	this.currentBlock = null;
 };
 
@@ -189,6 +192,8 @@ Engine.prototype.deleteLines = function(indexList) {
 		this.existingTileCollisionFlag.unshift(WALL_FLAG);
 		this.existingTileList.unshift([]);
 	}
+
+	this.onDeleteLines(deleteLineNum);
 };
 
 Engine.prototype.insertLines = function(insertLineNum) {
@@ -228,5 +233,5 @@ Engine.prototype.insertLines = function(insertLineNum) {
 		this.existingTileList.push(insertTileLine);
 	}
 
-	this.tileUpdateListener(this.existingTileCollisionFlag);
+	this.onTileUpdated(this.existingTileCollisionFlag);
 };

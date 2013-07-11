@@ -26,9 +26,9 @@
 
 	$(document).ready(function() {
 		initialize();
-		mainLoop();
 	});
 
+	var client;
 	var engine;
 	var enemyStatus;
 	var pauseFlag = false;
@@ -46,7 +46,8 @@
 			swipe_velocity: 0.2
 		}).on('swipe', onSwipe);
 
-		engine = new Engine(onTileUpdated);
+		client = new NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock, onReceiveDisturbBlock);
+		engine = new Engine(onDeleteLines, onTileUpdated);
 		enemyStatus = new EnemyStatus();
 
 		// Set an event listener for window size to be changed
@@ -128,7 +129,11 @@
 		}
 	}
 
-	function mainLoop() {
+	function onWelcome(data) {
+		console.log("acceptable: " + data.acceptable);
+	}
+
+	function onStart(data) {
 		engine.initialize();
 		update();
 	}
@@ -139,11 +144,7 @@
 		}
 
 		if (!engine.currentBlock) {
-			var blockType = Math.floor( Math.random() * BLOCK_PARAM_LIST.length);
-			if (!engine.createBlock(blockType)) {
-				onGameOver();
-				return;
-			}
+			client.requestBlock();
 		} else {
 			executeBlockEvent(BlockEvent.DOWN);
 		}
@@ -153,14 +154,32 @@
 		}, 1000);
 	}
 
-	function onTileUpdated(existingTileCollisionFlag) {
-		enemyStatus.render(existingTileCollisionFlag);
+	function onWinGame() {
+		alert('You Win');
+		// engine.initialize();
+		// $('#blockArea').empty();
+		// enemyStatus.clear();
 	}
 
-	function onGameOver() {
-		alert('Game Over');
-		engine.initialize();
-		$('#blockArea').empty();
-		enemyStatus.clear();
+	function onReceiveBlock(data) {
+		//var blockType = Math.floor( Math.random() * BLOCK_PARAM_LIST.length);
+		if (!engine.createBlock(data.block_type)) {
+			client.disconnect();
+			alert('You Lose');
+			return;
+		}
+	}
+
+	function onReceiveDisturbBlock(data) {
+		console.log("onReceiveDisturbBlock: num = " + data.row_num);
+		engine.insertLines(data.row_num);
+	}
+
+	function onDeleteLines(deleteLineNum) {
+		client.sendEraceBlockRowNum(deleteLineNum);
+	}
+
+	function onTileUpdated(existingTileCollisionFlag) {
+		enemyStatus.render(existingTileCollisionFlag);
 	}
 })();
