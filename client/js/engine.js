@@ -234,6 +234,6 @@ Engine.prototype.insertLines = function(insertLineNum, emptyColumnIndex) {
 		this.existingTileList.push(insertTileLine);
 	}
 
-	this.onTileUpdated(this.existingTileCollisionFlag);
+	this.onTileUpdated(this.existingTileCollisionFlag.slice(0, this.rowNum));
 	return isAlive;
 };

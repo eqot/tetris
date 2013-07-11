@@ -47,7 +47,8 @@
 			swipe_velocity: 0.2
 		}).on('swipe', onSwipe);
 
-		client = new NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock, onReceiveDisturbBlock);
+		client = new NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock,
+								   onReceiveEnemyStatus, onReceiveDisturbBlock);
 		engine = new Engine(onDeleteLines, onTileUpdated);
 		enemyStatus = new EnemyStatus();
 
@@ -181,6 +182,10 @@
 		}
 	}
 
+	function onReceiveEnemyStatus(data) {
+		enemyStatus.render(data.block_status);
+	}
+
 	function onReceiveDisturbBlock(data) {
 		console.log("onReceiveDisturbBlock: num = " + data.row_num + ", empty = " + data.empty_column);
 		if (!engine.insertLines(data.row_num, data.empty_column)) {
@@ -188,11 +193,11 @@
 		}
 	}
 
-	function onDeleteLines(deleteLineNum) {
-		client.sendEraceBlockRowNum(deleteLineNum);
+	function onTileUpdated(tileStatus) {
+		client.sendStatus(tileStatus);
 	}
 
-	function onTileUpdated(existingTileCollisionFlag) {
-		enemyStatus.render(existingTileCollisionFlag);
+	function onDeleteLines(deleteLineNum) {
+		client.sendEraceBlockRowNum(deleteLineNum);
 	}
 })();
