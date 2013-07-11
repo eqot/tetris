@@ -15,9 +15,7 @@ var server = http.createServer(app);
 var io = io.listen(server);
 
 // all environments
-app.set('port', process.env.PORT || 3001);
-app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('port', process.env.PORT || 80);
 
 app.use(express.favicon());
 app.use(express.logger('dev'));
@@ -31,12 +29,11 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
-app.get('/users', user.list);
+app.get('/', express.static(path.join(__dirname, '../../client/index.html')));  
 
 server.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
-  //process.setuid(80);
+  process.setuid(80);
 });
 
 var MAX_BLOCK_NUM = 1000;
