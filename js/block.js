@@ -10,8 +10,8 @@ var ANIMATION_DURATION = '0.3s';
 // theta = 0, 90, 180, 270 (deg)
 var ROTATION_MATRIX_LIST = [[[1, 0], [0, 1]], [[0, -1], [1, 0]], [[-1, 0], [0, -1]], [[0, 1], [-1, 0]]];
 
-function Block(blockType, tileSize, topMargin, columnNum) {
-	console.log('block create');
+function Block(blockType, tileSize, topMargin) {
+	console.log('block create: type = ' + blockType);
 
 	this.blockType = blockType;
 	var blockParam = BLOCK_PARAM_LIST[blockType];

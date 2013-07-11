@@ -1,30 +1,23 @@
-var socket = io.connect();
+'use strict';
 
-socket.on('welcome', function (data) {
-  console.log("acceptable: " + data.acceptable);
-});
-
-socket.on('start', function(data) {
-  console.log("start");
-});
-
-socket.on('end', function(data) {
-  console.log("end message: " + data.message);
-});
-
-socket.on('block', function (data) {
-  createBlock(data.block_type);
-});
-
-socket.on('disturbBlock', function(data) {
-  console.log("row_num: " + data.row_num + ", empty_column: " + data.empty_column);
-});
-
-function requestBlock() {
-  socket.emit("requestBlock", {});
+function NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock, onReceiveDisturbBlock) {
+	var socket = io.connect();
+	socket.on('welcome', onWelcome);
+	socket.on('start', onStart);
+	socket.on('end', onWinGame);
+	socket.on('block', onReceiveBlock);
+	socket.on('disturbBlock', onReceiveDisturbBlock);
+	this.socket = socket;
 }
 
-function sendEraceBlockRowNum(rowNum) {
-  socket.emit("erasedBlock", {row_num: rowNum}); 
-}
+NetworkClient.prototype.disconnect = function() {
+	this.socket.disconnect();
+};
 
+NetworkClient.prototype.requestBlock = function() {
+	this.socket.emit("requestBlock", {});
+};
+
+NetworkClient.prototype.sendEraceBlockRowNum = function(rowNum) {
+	this.socket.emit("erasedBlock", {row_num: rowNum}); 
+};
