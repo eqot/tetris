@@ -37,7 +37,6 @@ Engine.prototype.initialize = function() {
 		this.existingTileList[i] = [];
 	}
 
-	this.insertLineVacantIndex = Math.floor( Math.random() * COLUMN_NUM);
 	this.currentBlock = null;
 };
 
@@ -196,7 +195,7 @@ Engine.prototype.deleteLines = function(indexList) {
 	this.onDeleteLines(deleteLineNum);
 };
 
-Engine.prototype.insertLines = function(insertLineNum) {
+Engine.prototype.insertLines = function(insertLineNum, emptyColumnIndex) {
 	// shift up existing tiles
 	for (var i = 0; i < this.rowNum; i++) {
 		var existingTileLine = this.existingTileList[i];
@@ -206,9 +205,11 @@ Engine.prototype.insertLines = function(insertLineNum) {
 	}
 
 	// check if block reaches the top of area
+	var isAlive = true;
 	for (var i = 0; i < insertLineNum; i++) {
 		if (this.existingTileCollisionFlag[i] !== WALL_FLAG) {
-			return;
+			isAlive = false;
+			break;
 		}
 	}
 
@@ -221,7 +222,7 @@ Engine.prototype.insertLines = function(insertLineNum) {
 		var collisionFlag = WALL_FLAG;
 		var insertTileLine = [];
 		for (var x = 0; x < COLUMN_NUM; x++) {
-			if (x === this.insertLineVacantIndex) {
+			if (x === emptyColumnIndex) {
 				continue;
 			}
 			var tile = new Tile(x, y, 'darkgray', this.tileSize, this.topMargin);
@@ -234,4 +235,5 @@ Engine.prototype.insertLines = function(insertLineNum) {
 	}
 
 	this.onTileUpdated(this.existingTileCollisionFlag);
+	return isAlive;
 };
