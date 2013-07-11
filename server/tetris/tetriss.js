@@ -68,17 +68,27 @@ io.sockets.on('connection', function(socket) {
   }
 
   socket.on('requestBlock', function(data) {
-    if (userCount == 2) {
-      console.log("requestBlock current: " + current);
+    console.log("requestBlock userId: " + userId + " current: " + current);
+    if (userCount == MAX_USER_NUM) {
       socket.emit('block', { block_type: blocks[current++] });
     }
   });
 
+  socket.on('blockStatus', function(data) {
+    console.log("blockStaus userId: " + userId);
+    if (userCount == MAX_USER_NUM) {
+      var opponentSessionId = sessionIds[userId ^ 1];
+      io.sockets.socket(opponentSessionId).emit('opponentBlockStatus', { block_status: data.block_status });
+    }
+  });
+
   socket.on('erasedBlock', function(data) {
-    console.log("erasedBlock row_num: " + data.row_num);
-    var emptyColumn = Math.floor(Math.random() * WIDTH);
-    var opponentSessionId = sessionIds[userId ^ 1];
-    io.sockets.socket(opponentSessionId).emit('disturbBlock', { row_num: data.row_num, empty_column: emptyColumn });
+    console.log("erasedBlock userId: " + userId + " row_num: " + data.row_num);
+    if (userCount == MAX_USER_NUM) {
+      var emptyColumn = Math.floor(Math.random() * WIDTH);
+      var opponentSessionId = sessionIds[userId ^ 1];
+      io.sockets.socket(opponentSessionId).emit('disturbBlock', { row_num: data.row_num, empty_column: emptyColumn });
+    }
   });
 
   socket.on('disconnect', function() {
