@@ -219,7 +219,7 @@ Engine.prototype.insertLines = function(insertLineNum) {
 			if (x === this.insertLineVacantIndex) {
 				continue;
 			}
-			var tile = new Tile(x, y, 'DimGray', this.tileSize, this.topMargin);
+			var tile = new Tile(x, y, 'darkgray', this.tileSize, this.topMargin);
 			$('#blockArea').append(tile.$tile);
 			collisionFlag |=LEFT_EDGE_FLAG << x;
 			insertTileLine.push(tile);
