@@ -27,15 +27,15 @@ EnemyStatus.prototype.clear = function () {
 };
 
 // Render blocks in canvas
-EnemyStatus.prototype.render = function (tileCollisionFlag) {
+EnemyStatus.prototype.render = function (tileStatus) {
 	this.clear();
 
 	this.context.fillStyle = 'white';
 	var tileSize = this.tileSize;
-	for (var y = 0; y < tileCollisionFlag.length; y++) {
-		var lineCollisionFlag = tileCollisionFlag[y];
+	for (var y = 0; y < tileStatus.length; y++) {
+		var lineStatus = tileStatus[y];
 		for (var x = 0; x < COLUMN_NUM; x++) {
-			if ((LEFT_EDGE_FLAG << x) & lineCollisionFlag) {
+			if ((LEFT_EDGE_FLAG << x) & lineStatus) {
 				this.context.fillRect(tileSize * x, tileSize * y, tileSize, tileSize);
 			}
 		}
