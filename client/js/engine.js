@@ -177,9 +177,11 @@ Engine.prototype.deleteLines = function(indexList) {
 		for (var j = deleteLineIndex - 1; j >= 0; j--) {
 			var existingTileLine = this.existingTileList[j];
 			for (var k = 0; k < existingTileLine.length; k++) {
-				existingTileLine[k].shift(ShiftDirection.DOWN, 1);
+				//existingTileLine[k].shift(ShiftDirection.DOWN, 1);
+				existingTileLine[k].shiftDelayed(ShiftDirection.DOWN, 1, 700);
 			}
 		}
+
 
 		// update existing tile status
 		this.existingTileCollisionFlag.splice(deleteLineIndex, 1);

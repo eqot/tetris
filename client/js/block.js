@@ -3,7 +3,6 @@
 'use strict';
 
 var ROTATION_DEGREE = 90;
-var ANIMATION_DURATION = '0.3s';
 
 // | cos(theta) -sin(theta) |
 // | sin(theta) cos(theta)  |
@@ -28,7 +27,6 @@ function Block(blockType, tileSize, topMargin) {
 
 Block.prototype.createDom = function(blockParam) {
 	var $block = $('<div/>').addClass('block');
-	$block.css('-webkit-transition', ANIMATION_DURATION);
 
 	var tileNum = blockParam.placement.length;
 	this.tileList = new Array(tileNum);
@@ -89,11 +87,14 @@ Tile.prototype.createDom = function(tileSize, color) {
 	var $tile = $('<div/>').addClass('tile');
 	this.$tile = $tile;
 	$tile.css('background-color', color);
-	$tile.css('-webkit-transition', ANIMATION_DURATION);
 };
 
 Tile.prototype.removeDom = function() {
-	this.$tile.remove();
+	this.$tile.addClass('deleteAnim').bind('webkitTransitionEnd', function() {
+		//$(this).removeClass('deleteAnim');
+		$(this).remove();
+	});
+	//this.$tile.remove();
 };
 
 Tile.prototype.setTileSize = function(tileSize) {
@@ -121,6 +122,13 @@ Tile.prototype.shift = function(direction, distance) {
 		break;
 	}
 	this.updateTransform();
+};
+
+Tile.prototype.shiftDelayed = function(direction, distance, ms) {
+	var obj = this;
+	setTimeout(function() {
+		obj.shift(direction, distance);
+	}, ms);
 };
 
 Tile.prototype.updateTransform = function() {
