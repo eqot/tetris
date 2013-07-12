@@ -1,7 +1,17 @@
+/*global io */
+
 'use strict';
 
 function NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock, onReceiveEnemyStatus,
 					   onReceiveDisturbBlock) {
+	if (typeof io === 'undefined') {
+		this.onReceiveBlock = onReceiveBlock;
+
+		setTimeout(onStart, 1000);
+
+		return;
+	}
+
 	var socket = io.connect();
 	socket.on('welcome', onWelcome);
 	socket.on('start', onStart);
@@ -13,17 +23,29 @@ function NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock, onReceiveE
 }
 
 NetworkClient.prototype.disconnect = function() {
-	this.socket.disconnect();
+	if (this.socket) {
+		this.socket.disconnect();
+	}
 };
 
 NetworkClient.prototype.requestBlock = function() {
-	this.socket.emit('requestBlock', {});
+	if (this.socket) {
+		this.socket.emit('requestBlock', {});
+	} else {
+		this.onReceiveBlock({
+			block_type: Math.floor(Math.random() * BLOCK_PARAM_LIST.length)
+		});
+	}
 };
 
 NetworkClient.prototype.sendStatus = function(tileStatus) {
-	this.socket.emit('blockStatus', {block_status: tileStatus}); 
+	if (this.socket) {
+		this.socket.emit('blockStatus', {block_status: tileStatus});
+	}
 };
 
 NetworkClient.prototype.sendEraceBlockRowNum = function(rowNum) {
-	this.socket.emit('erasedBlock', {row_num: rowNum}); 
+	if (this.socket) {
+		this.socket.emit('erasedBlock', {row_num: rowNum});
+	}
 };
