@@ -2,7 +2,7 @@
 
 'use strict';
 
-function NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock, onReceiveEnemyStatus,
+function NetworkClient(onConnected, onStart, onWinGame, onReceiveBlock, onReceiveEnemyStatus,
 					   onReceiveDisturbBlock) {
 	if (typeof io === 'undefined') {
 		this.onReceiveBlock = onReceiveBlock;
@@ -13,7 +13,7 @@ function NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock, onReceiveE
 	}
 
 	var socket = io.connect();
-	socket.on('welcome', onWelcome);
+	socket.on('connected', onConnected);
 	socket.on('start', onStart);
 	socket.on('end', onWinGame);
 	socket.on('block', onReceiveBlock);
@@ -21,6 +21,12 @@ function NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock, onReceiveE
 	socket.on('disturbBlock', onReceiveDisturbBlock);
 	this.socket = socket;
 }
+
+NetworkClient.prototype.init = function(name) {
+	if (this.socket) {
+		this.socket.emit('init', {name: name});
+	}
+};
 
 NetworkClient.prototype.disconnect = function() {
 	if (this.socket) {

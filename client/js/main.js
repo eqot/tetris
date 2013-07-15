@@ -47,7 +47,7 @@
 			swipe_velocity: 0.2
 		}).on('swipe', onSwipe);
 
-		client = new NetworkClient(onWelcome, onStart, onWinGame, onReceiveBlock,
+		client = new NetworkClient(onConnected, onStart, onWinGame, onReceiveBlock,
 								   onReceiveEnemyStatus, onReceiveDisturbBlock);
 		engine = new Engine(onDeleteLines, onTileUpdated);
 		enemyStatus = new EnemyStatus();
@@ -135,11 +135,14 @@
 		}
 	}
 
-	function onWelcome(data) {
-		console.log("acceptable: " + data.acceptable);
+	function onConnected(data) {
+		console.log("onConnected");
+		// TODO set user name
+		client.init('');
 	}
 
 	function onStart(data) {
+		console.log("onStart");
 		isGameOver = false;
 		engine.initialize();
 		update();
