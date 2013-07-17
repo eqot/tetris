@@ -16,6 +16,8 @@
 	position: absolute;
 	-webkit-transition: 0.3s;
 	-webkit-transform-style: preserve-3d;
+	-moz-transition: 0.3s;
+	-moz-transform-style: preserve-3d;
 }
 
 .tile {
@@ -29,11 +31,16 @@
 	/* -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.7) inset; */
 	-webkit-transition: 0.3s;
 	-webkit-transform-style: preserve-3d;
+	-moz-box-sizing: border-box;
+	background: -moz-linear-gradient(left top, rgba(0, 0, 0, 0.3), rgba(255, 255, 255, 0.5));
+	-moz-transition: 0.3s;
+	-moz-transform-style: preserve-3d;
 }
 
 .deleteAnim {
 	opacity: 0;
 	-webkit-transition: 1.0s;
+	-moz-transition: 1.0s;
 }
 
 #statusArea {

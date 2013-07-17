@@ -66,12 +66,16 @@ Block.prototype.move = function(blockEvent) {
 };
 
 Block.prototype.updateTransform = function() {
-	this.$block.css('-webkit-transform-origin',
-					(this.transformParam.x + this.rotationCenterOffset) * this.tileSize + 'px ' +
-					((this.transformParam.y + this.rotationCenterOffset) * this.tileSize + this.topMargin) + 'px');
-	this.$block.css('-webkit-transform', 'rotate(' + this.transformParam.rotation * ROTATION_DEGREE +
+	var transformOrigin = (this.transformParam.x + this.rotationCenterOffset) * this.tileSize + 'px ' +
+		((this.transformParam.y + this.rotationCenterOffset) * this.tileSize + this.topMargin) + 'px';
+	this.$block.css('-webkit-transform-origin', transformOrigin);
+	this.$block.css('-moz-transform-origin', transformOrigin);
+
+	var transform = 'rotate(' + this.transformParam.rotation * ROTATION_DEGREE +
 					'deg) translate(' + this.transformParam.x * this.tileSize + 'px, ' +
-					(this.transformParam.y * this.tileSize + this.topMargin) + 'px)');
+					(this.transformParam.y * this.tileSize + this.topMargin) + 'px)';
+	this.$block.css('-webkit-transform', transform);
+	this.$block.css('-moz-transform', transform);
 };
 
 function Tile(x, y, color, tileSize, topMargin) {
@@ -132,8 +136,10 @@ Tile.prototype.shiftDelayed = function(direction, distance, ms) {
 };
 
 Tile.prototype.updateTransform = function() {
-	this.$tile.css('-webkit-transform', 'translate(' + this.x * this.tileSize + 'px, ' +
-				   (this.y * this.tileSize + this.topMargin) + 'px)');
+	var transform = 'translate(' + this.x * this.tileSize + 'px, ' +
+		(this.y * this.tileSize + this.topMargin) + 'px)';
+	this.$tile.css('-webkit-transform', transform);
+	this.$tile.css('-moz-transform', transform);
 };
 
 function TransformParam(x, y, rotation) {
